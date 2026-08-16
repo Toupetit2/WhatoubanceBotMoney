@@ -1,0 +1,26 @@
+{
+    "minigames": {
+        "first_dice_roll": {
+            "description": "Lance les dés pour la première fois.",
+            "title": "Premier lancer de dés"
+        },
+        "first_guess": {
+            "description": "Fais ta première supposition dans un minijeu.",
+            "title": "Première supposition"
+        },
+        "first_win": {
+            "description": "Gagne ton premier minijeu.",
+            "title": "Première victoire"
+        },
+        "first_placement": {
+            "description": "Trouve la bonne place pour la première fois.",
+            "title": "Première place correcte"
+        }
+    },
+    "Profil": {
+        "get_profile": {
+            "description": "Vous avez utilisé la commande /get_profile pour voir votre profil et vos statistiques.",
+            "title": "Explorateur de profil"
+        }
+    }
+}

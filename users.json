@@ -1,0 +1,82 @@
+{
+    "648159511500161054": {
+        "monnaie": 2509,
+        "has_played": true,
+        "stats": {
+            "magic_roll_game_count": 3,
+            "current_streak": 3,
+            "last_played_date": "2026-08-07",
+            "best_streak": 3,
+            "luckydice_game_count": 4,
+            "magic_roll_whatoubiffs_total": 100,
+            "loaded_dice_game_count": 1,
+            "loaded_dice_whatoubiffs_total": 32,
+            "loaded_dice_faces": {
+                "1": 0,
+                "2": 0,
+                "3": 1,
+                "4": 0,
+                "5": 0,
+                "6": 0
+            },
+            "minigame1_game_count": 6,
+            "minigame1_whatoubiffs_total": 305,
+            "minigame1_average_error": 23.916666666666668
+        },
+        "success": {
+            "Profil": [
+                "get_profile"
+            ]
+        },
+        "equiped_title": "Explorateur de profil"
+    },
+    "323174849847623681": {
+        "monnaie": 2560,
+        "has_played": true,
+        "stats": {
+            "current_streak": 1,
+            "last_played_date": "2026-08-07",
+            "best_streak": 1,
+            "minigame1_game_count": 10,
+            "minigame1_whatoubiffs_total": 280,
+            "loaded_dice_game_count": 3,
+            "luckydice_game_count": 11,
+            "loaded_dice_whatoubiffs_total": 97,
+            "loaded_dice_faces": {
+                "1": 0,
+                "2": 0,
+                "3": 2,
+                "4": 1,
+                "5": 0,
+                "6": 0
+            },
+            "magic_roll_game_count": 4,
+            "magic_roll_whatoubiffs_total": 80,
+            "golden_gamble_game_count": 4,
+            "golden_gamble_whatoubiffs_total": 175,
+            "golden_gamble_total_wins": 1,
+            "minigame1_average_error": 5.5
+        },
+        "success": {
+            "Profil": [
+                "get_profile"
+            ]
+        },
+        "equiped_title": "Explorateur de profil"
+    },
+    "125342797514407936": {
+        "monnaie": 30
+    },
+    "1077618859693064192": {
+        "monnaie": 0
+    },
+    "1532468620750225549": {
+        "monnaie": 22
+    },
+    "1532866668928307353": {
+        "monnaie": 2
+    },
+    "1521636285817819379": {
+        "monnaie": 65999
+    }
+}
