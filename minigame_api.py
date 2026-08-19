@@ -116,15 +116,16 @@ async def screenshot_url(url: str, output_path: str = "screenshot.png"):
             device_scale_factor=2
         )
 
-        await page.goto(url, wait_until="networkidle", timeout=30000)
+        await page.goto(url, wait_until="domcontentloaded", timeout=30000)
 
         try:
-            await page.get_by_role("button", name="Accept", exact=True).click(
-                timeout=5000
-            )
+            await page.get_by_role("button", name="Accept", exact=True).click(timeout=5000)
             print("[INFO] Accept cliqué", flush=True)
         except Exception as e:
             print(f"[ERROR] Impossible de cliquer sur Accept: {e}", flush=True)
+
+        # attendre que le contenu réel soit là plutôt qu'un état réseau flou
+        await page.wait_for_selector("[class*='gap-y-5'][class*='grid']", timeout=15000)
 
         await page.add_style_tag(content=CUSTOM_CSS)
         await page.wait_for_timeout(5000)
