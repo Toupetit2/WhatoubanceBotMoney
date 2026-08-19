@@ -100,34 +100,51 @@ def get_random_gameid():
 
 
 from playwright.async_api import async_playwright
+import asyncio
 
 CUSTOM_CSS = """
 .bg-bg2 { background-color: #0F3058 !important; }
 [class*='gap-y-5'][class*='grid'] {
     grid-template-columns: repeat(15, minmax(0, 1fr)) !important;
 }
+* { animation: none !important; transition: none !important; }
+html { scrollbar-width: none; }
+html::-webkit-scrollbar { display: none; }
 """
-
-import asyncio
 
 screenshot_semaphore = asyncio.Semaphore(1)
 
+_playwright = None
+_browser = None
+
+
+async def get_browser():
+    """Réutilise une seule instance de navigateur au lieu d'en relancer une à chaque fois."""
+    global _playwright, _browser
+    if _browser is None or not _browser.is_connected():
+        if _playwright is None:
+            _playwright = await async_playwright().start()
+        _browser = await _playwright.chromium.launch(
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+            ]
+        )
+    return _browser
+
+
 async def screenshot_url(url: str, output_path: str = "screenshot.png"):
     async with screenshot_semaphore:
-        async with async_playwright() as p:
-            browser = await p.chromium.launch()
-            page = await browser.new_page(
-                viewport={"width": 1280, "height": 750},
-                device_scale_factor=2,
-            )
-
-            await page.goto(url, wait_until="networkidle", timeout=30000)
-
-            # Attendre que les polices soient chargées, pas juste le réseau
+        browser = await get_browser()
+        page = await browser.new_page(
+            viewport={"width": 1280, "height": 750},
+            device_scale_factor=2,
+        )
+        try:
+            await page.goto(url, wait_until="load", timeout=30000)
             await page.evaluate("document.fonts.ready")
-
-            # Remettre le scroll en haut, au cas où une action précédente l'aurait décalé
-            await page.evaluate("window.scrollTo(0, 0)")
 
             try:
                 await page.click("text=Accept", timeout=5000)
@@ -135,6 +152,22 @@ async def screenshot_url(url: str, output_path: str = "screenshot.png"):
                 pass
 
             await page.add_style_tag(content=CUSTOM_CSS)
-            await page.wait_for_timeout(5000)  # laisse le CSS custom se stabiliser
+            await page.wait_for_timeout(500)
+
+            await page.evaluate("window.scrollTo(0, 0)")
+            await page.wait_for_timeout(200)
+
             await page.screenshot(path=output_path)
-            await browser.close()
+        finally:
+            await page.close()
+
+
+async def shutdown_browser():
+    """Ferme proprement le navigateur et playwright. À appeler à l'arrêt du bot."""
+    global _browser, _playwright
+    if _browser:
+        await _browser.close()
+        _browser = None
+    if _playwright:
+        await _playwright.stop()
+        _playwright = None
