@@ -1,23 +1,5 @@
 [
   {
-    "id": "517fae7ae5f8444a826d9e5acca7d923",
-    "answer": 6,
-    "raw_path": "minigame_screenshots\\517fae7ae5f8444a826d9e5acca7d923_raw.png",
-    "final_path": "minigame_screenshots\\517fae7ae5f8444a826d9e5acca7d923_final.png"
-  },
-  {
-    "id": "6a33c3029e92426cb9cb82b1da6f7321",
-    "answer": 3,
-    "raw_path": "minigame_screenshots\\6a33c3029e92426cb9cb82b1da6f7321_raw.png",
-    "final_path": "minigame_screenshots\\6a33c3029e92426cb9cb82b1da6f7321_final.png"
-  },
-  {
-    "id": "3c22fdca280a44d6b5d73d1c3a322981",
-    "answer": 8,
-    "raw_path": "minigame_screenshots\\3c22fdca280a44d6b5d73d1c3a322981_raw.png",
-    "final_path": "minigame_screenshots\\3c22fdca280a44d6b5d73d1c3a322981_final.png"
-  },
-  {
     "id": "2c2d6b9f60604b02942141e9a85cb463",
     "answer": 5,
     "raw_path": "minigame_screenshots\\2c2d6b9f60604b02942141e9a85cb463_raw.png",
@@ -58,5 +40,23 @@
     "answer": 4,
     "raw_path": "minigame_screenshots\\4a3aaeb2d7c24b8c97b4caa0ccaa2eac_raw.png",
     "final_path": "minigame_screenshots\\4a3aaeb2d7c24b8c97b4caa0ccaa2eac_final.png"
+  },
+  {
+    "id": "4d35a2765e634e2ebc60f3265c25b9e8",
+    "answer": 8,
+    "raw_path": "minigame_screenshots\\4d35a2765e634e2ebc60f3265c25b9e8_raw.png",
+    "final_path": "minigame_screenshots\\4d35a2765e634e2ebc60f3265c25b9e8_final.png"
+  },
+  {
+    "id": "873eb24756ed4c6294ef20ada2a69496",
+    "answer": 6,
+    "raw_path": "minigame_screenshots\\873eb24756ed4c6294ef20ada2a69496_raw.png",
+    "final_path": "minigame_screenshots\\873eb24756ed4c6294ef20ada2a69496_final.png"
+  },
+  {
+    "id": "0eef84214b7c40688d0096cb203ba4f2",
+    "answer": 5,
+    "raw_path": "minigame_screenshots\\0eef84214b7c40688d0096cb203ba4f2_raw.png",
+    "final_path": "minigame_screenshots\\0eef84214b7c40688d0096cb203ba4f2_final.png"
   }
 ]

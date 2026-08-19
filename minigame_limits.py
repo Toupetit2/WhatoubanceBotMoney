@@ -49,7 +49,7 @@ def can_play_today(user_ID: int):
 
 paris_tz = zoneinfo.ZoneInfo("Europe/Paris")
 
-@tasks.loop(time=datetime.time(hour=0, minute=0, tzinfo=paris_tz))
+@tasks.loop(time=datetime.time(hour=10, minute=0, tzinfo=paris_tz))
 async def reset_minigame():
     print("[INFO] RESET MINIGAME HAS_PLAYED FLAGS")
 

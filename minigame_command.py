@@ -6,9 +6,10 @@ import shutil
 import minigame_queue
 import give
 import minigames_gains
+import success_checks
 
 
-def minigame_answer(answer: int, guess: int, interaction: discord.Interaction):
+async def minigame_answer(answer: int, guess: int, interaction: discord.Interaction):
     points_repartition = minigames_gains.get_gains("find_placement")
 
     messages = {
@@ -31,6 +32,10 @@ def minigame_answer(answer: int, guess: int, interaction: discord.Interaction):
     give.increment_statistic(interaction.user, "minigame1_whatoubiffs_total", points_repartition[distance])
     give.set_statistic(interaction.user, "minigame1_average_error", give.get_statistic(interaction.user, "minigame1_average_error")+(points_repartition[distance]/give.get_statistic(interaction.user, "minigame1_game_count")))
 
+    await success_checks.check_minigame_success(interaction.user, distance, interaction)
+    await success_checks.register_day_played(interaction.member)
+    await success_checks.check_played_days_success(interaction.member, interaction)
+
     return messages[distance].format(points=points_repartition[distance], answer=answer)
 
 
@@ -50,7 +55,7 @@ class MinigameView(discord.ui.View):
             return
 
         self.answered = True
-        message = minigame_answer(self.answer, guess, interaction)
+        message = await minigame_answer(self.answer, guess, interaction)
 
         for child in self.children:
             child.disabled = True

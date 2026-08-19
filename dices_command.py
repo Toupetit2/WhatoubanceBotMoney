@@ -4,6 +4,7 @@ from dices_backend import loaded_dice, magic_roll, golden_gamble
 import asyncio
 import random
 import give
+import success_checks
 
 
 class DicesView(discord.ui.View):
@@ -14,6 +15,8 @@ class DicesView(discord.ui.View):
 
     async def handle_roll(self, interaction: discord.Interaction, roll_function):
         give.update_daily_streak(interaction.user)
+        await success_checks.register_day_played(interaction.member)
+        await success_checks.check_played_days_success(interaction.member, interaction)
         give.increment_statistic(interaction.user, "luckydice_game_count")
         if self.answered:
             await interaction.response.send_message(
@@ -74,12 +77,16 @@ class DicesView(discord.ui.View):
                 give.increment_statistic(interaction.user, "loaded_dice_whatoubiffs_total", gain)
                 give.register_dice_roll(interaction.user, dices[0])
 
+                await success_checks.check_loaded_dice_success(interaction.user, dices[0], interaction)
+
             elif roll_function == magic_roll:
                 message = f"Tu gagnes : {gain} points"
                 give.increment_statistic(interaction.user, "magic_roll_whatoubiffs_total", gain)
 
                 if dices == [1, 1, 1] or dices == [6, 6, 6]:
                     give.increment_statistic(interaction.user, "magic_roll_triple16")
+
+                await success_checks.check_magic_roll_success(interaction.user, dices, interaction)
 
             elif roll_function == golden_gamble:
                 if gain > 0:
@@ -89,6 +96,8 @@ class DicesView(discord.ui.View):
 
                 else:
                     message = f"Tu perd donc ta mise de {-gain} points"
+
+                await success_checks.check_golden_gamble_success(interaction.user, gain>0, interaction)
 
             await interaction.followup.send(message, ephemeral=True)
 
@@ -115,4 +124,4 @@ class DicesView(discord.ui.View):
 
 
 async def launch_minigame(interaction: discord.Interaction):
-    await interaction.response.send_message("", view=DicesView(), ephemeral=True)
+    await interaction.response.send_message("",file=discord.File("Images/diceGame.jpg"), view=DicesView(), ephemeral=True)

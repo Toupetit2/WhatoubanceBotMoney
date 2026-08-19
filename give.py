@@ -16,7 +16,7 @@ def give_coins(amount: int, member: discord.Member):
     user_id = str(member.id)
 
     if user_id not in data:
-        data[user_id] = {"monnaie": 0}
+        data[user_id] = {"monnaie": 50}
 
     if data[user_id].get("monnaie") is None :
         data[user_id]["monnaie"] = amount
@@ -96,7 +96,7 @@ def unlock_success(member: discord.Member, name: str, category: str):
 
     user_id = str(member.id)
     if user_id not in data:
-        data[user_id] = {"monnaie": 0}
+        data[user_id] = {"monnaie": 50}
     if "success" not in data[user_id]:
         data[user_id]["success"] = {}
     if category not in data[user_id]["success"]:
@@ -121,9 +121,9 @@ async def unlock_success_and_notify(member: discord.Member, name: str, category:
         success_info = all_successes.get(category, {}).get(name, {})
         titre = success_info.get("title")
 
-        message = f"Nouveau succès débloqué : **{name}** !"
+        message = ""
         if titre:
-            message += f"\nNouveau titre disponible : **{titre}** ! (tu peux le sélectionner dans ton profil)"
+            message += f"Nouveau titre disponible : **{titre}** ! (tu peux le sélectionner dans ton profil)"
 
         if interaction.response.is_done():
             await interaction.followup.send(message, ephemeral=True)
@@ -204,7 +204,7 @@ def set_equiped_title(member: discord.Member, title: str):
 
     user_id = str(member.id)
     if user_id not in data:
-        data[user_id] = {"monnaie": 0}
+        data[user_id] = {"monnaie": 50}
 
     data[user_id]["equiped_title"] = title
 
@@ -219,7 +219,8 @@ def get_unlocked_titles(member: discord.Member) -> list[str]:
             data = json.load(f)
 
     user_id = str(member.id)
-    unlocked_by_category = data.get(user_id, {}).get("success", {})
+    user_data = data.get(user_id, {})
+    unlocked_by_category = user_data.get("success", {})
 
     all_successes = list_successes()
 
@@ -231,6 +232,10 @@ def get_unlocked_titles(member: discord.Member) -> list[str]:
             titre = success_info.get("title")
             if titre:
                 titles.append(titre)
+
+    # 👇 titres achetés en boutique
+    titles.extend(user_data.get("titres_possedes", []))
+
     return titles
 
 # ---------------- Statistiques ----------------
@@ -243,7 +248,7 @@ def set_statistic(member: discord.Member, statistic: str, value):
 
     user_id = str(member.id)
     if user_id not in data:
-        data[user_id] = {"monnaie": 0}
+        data[user_id] = {"monnaie": 50}
     if "stats" not in data[user_id]:
         data[user_id]["stats"] = {}
 
@@ -312,7 +317,7 @@ def register_dice_roll(member: discord.Member, face: int):
 
     user_id = str(member.id)
     if user_id not in data:
-        data[user_id] = {"monnaie": 0}
+        data[user_id] = {"monnaie": 50}
     if "stats" not in data[user_id]:
         data[user_id]["stats"] = {}
     if "loaded_dice_faces" not in data[user_id]["stats"]:
@@ -347,5 +352,6 @@ def get_betting_win_rate(member: discord.Member):
     total = get_statistic(member, "betting_total_bets", 0)
     if total == 0:
         return 0.0
-    wins = get_statistic(member, "betting_total_wins", 0)
+    wins = get_statistic(member, "betting_wins", 0)
     return round((wins / total) * 100, 1)
+

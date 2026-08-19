@@ -1,7 +1,9 @@
 import discord
 import give
+import os
 from get_leaderboard import get_whatoubiffs_leaderboard, get_successes_leaderboard
 
+EMOJI_WTBIFF = os.getenv("EMOJI_WTBIFF", "💰")
 
 def format_dice_faces(faces: dict) -> str:
     order = ["1", "2", "3", "4", "5", "6"]
@@ -34,7 +36,7 @@ def get_profile_embed(user: discord.Member, page: int = 1):
         favorite_lucky_dice = give.get_favorite_lucky_dice(user)
 
         embed.add_field(name=equiped_title, value="", inline=False)
-        embed.add_field(name="💰 WhatouBiffs", value=str(coins), inline=True)
+        embed.add_field(name=f"{EMOJI_WTBIFF} WhatouBiffs", value=str(coins), inline=True)
 
         user_id = str(user.id)
 
@@ -138,13 +140,12 @@ def get_profile_embed(user: discord.Member, page: int = 1):
         )
 
     elif page == 4:
-        categories = ["loaded_dice", "magic_roll", "golden_gamble", "betting", "minigame1"]
+        categories = ["Des", "Mini jeu", "Paris", "Global"]
         labels = {
-            "loaded_dice": "Loaded Dice",
-            "magic_roll": "Magic Roll",
-            "golden_gamble": "Golden Gamble",
-            "betting": "Paris",
-            "minigame1": "Mini jeu 1",
+            "Des": "🎲 Dés",
+            "Mini jeu": "🎮 Mini jeu",
+            "Paris": "🎰 Paris",
+            "Global": "🌐 Global"
         }
 
         lines = []
@@ -153,7 +154,7 @@ def get_profile_embed(user: discord.Member, page: int = 1):
             lines.append(f"{labels[cat]} : {unlocked}/{total}")
 
         global_unlocked, global_total = give.get_global_success_progress(user)
-        lines.append(f"**Global : {global_unlocked}/{global_total}**")
+        lines.append(f"**Total : {global_unlocked}/{global_total}**")
 
         embed.add_field(name="🏆 Succès Débloqués", value="\n".join(lines), inline=False)
     
