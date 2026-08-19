@@ -11,6 +11,7 @@ boutique.json
 boutique_ref.json
 loterie.json
 loterie_ref.json
-leaderboard_ref.json
+commands/leaderboard.json
+commands/leaderboard_ref.json
 data.json
 bets.json
