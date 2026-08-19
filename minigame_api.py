@@ -110,24 +110,21 @@ CUSTOM_CSS = """
 
 async def screenshot_url(url: str, output_path: str = "screenshot.png"):
     async with async_playwright() as p:
-        context = await p.chromium.launch_persistent_context(
-            "/home/youruser/.playwright-profile",  # dossier persistant, à créer/adapter
+        browser = await p.chromium.launch()
+        page = await browser.new_page(
             viewport={"width": 1280, "height": 750},
-            device_scale_factor=2,
+            device_scale_factor=2
         )
-        page = await context.new_page()
 
-        await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+        await page.goto(url, wait_until="networkidle", timeout=30000)
 
         try:
-            await page.get_by_role("button", name="Accept", exact=True).click(timeout=12000)
-            print("[INFO] Accept cliqué", flush=True)
-        except Exception as e:
-            print(f"[ERROR] Impossible de cliquer sur Accept: {e}", flush=True)
+            await page.click("text=Accept", timeout=3000)
+        except:
+            pass
 
-        await page.wait_for_selector("[class*='gap-y-5'][class*='grid']", timeout=15000)
         await page.add_style_tag(content=CUSTOM_CSS)
         await page.wait_for_timeout(5000)
         await page.screenshot(path=output_path)
-        await context.close()
+        await browser.close()
 
