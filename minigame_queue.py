@@ -7,7 +7,7 @@ import minigame_modify_png
 
 SCREENS_DIR = "minigame_screenshots"
 QUEUE_FILE = "minigame_queue.json"
-TARGET_SIZE = 10
+TARGET_SIZE = 20
 
 os.makedirs(SCREENS_DIR, exist_ok=True)
 
