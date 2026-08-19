@@ -7,10 +7,10 @@ class MinigamesView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
     
-    @discord.ui.button(label="Minijeu 1", style=discord.ButtonStyle.gray, custom_id="minigame_1_button") 
+    @discord.ui.button(label="Master Mind", style=discord.ButtonStyle.gray, custom_id="minigame_1_button") 
     async def minigame_button_one(self, interaction: discord.Interaction, button: discord.ui.Button): 
         await launch_minigame(interaction)
 
-    @discord.ui.button(label="Minigame 2", style=discord.ButtonStyle.gray, custom_id="minigame_2_button") 
+    @discord.ui.button(label="Lucky Dice", style=discord.ButtonStyle.gray, custom_id="minigame_2_button") 
     async def minigame_button_two(self, interaction: discord.Interaction, button: discord.ui.Button): 
         await launch_dice_minigame(interaction)
