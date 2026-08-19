@@ -119,8 +119,7 @@ async def screenshot_url(url: str, output_path: str = "screenshot.png"):
         await page.goto(url, wait_until="domcontentloaded", timeout=30000)
 
         try:
-            await page.get_by_role("button", name="Accept", exact=True).click(timeout=5000)
-            print("[INFO] Accept cliqué", flush=True)
+            await page.locator("button:has-text('Accept'), button:has-text('Accepter'), button:has-text('I agree')").first.click(timeout=5000)
         except Exception as e:
             print(f"[ERROR] Impossible de cliquer sur Accept: {e}", flush=True)
 
