@@ -69,13 +69,13 @@ async def generate_one():
 
 
 async def refill_queue():
-    print("refill Q")
+    print("refill Q", flush=True)
     while queue_size() < TARGET_SIZE:
         try:
             entry_id = await generate_one()
-            print(f"[INFO] minijeu pré-généré ajouté : {entry_id} (file: {queue_size()}/{TARGET_SIZE})")
+            print(f"[INFO] minijeu pré-généré ajouté : {entry_id} (file: {queue_size()}/{TARGET_SIZE})", flush=True)
         except Exception as e:
-            print(f"[ERROR] échec génération minijeu : {e}")
+            print(f"[ERROR] échec génération minijeu : {e}", flush=True)
             break
 
 

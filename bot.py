@@ -36,7 +36,6 @@ class Bot(commands.Bot):
 
         if not refill_minigame_queue_loop.is_running():
             refill_minigame_queue_loop.start()
-            await minigame_queue.refill_queue()
 
         self.add_view(MinigamesView())
 
