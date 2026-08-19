@@ -125,11 +125,11 @@ async def screenshot_url(url: str, output_path: str = "screenshot.png"):
         await page.evaluate("window.scrollTo(0, 0)")
 
         try:
-            await page.click("text=Accept", timeout=3000)
+            await page.click("text=Accept", timeout=5000)
         except Exception:
             pass
 
         await page.add_style_tag(content=CUSTOM_CSS)
-        await page.wait_for_timeout(3000)  # laisse le CSS custom se stabiliser
+        await page.wait_for_timeout(5000)  # laisse le CSS custom se stabiliser
         await page.screenshot(path=output_path)
         await browser.close()
