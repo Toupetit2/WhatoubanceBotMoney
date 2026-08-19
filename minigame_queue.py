@@ -69,7 +69,6 @@ async def generate_one():
 
 
 async def refill_queue():
-    print("refill Q", flush=True)
     while queue_size() < TARGET_SIZE:
         try:
             entry_id = await generate_one()
