@@ -164,7 +164,7 @@ def setup(bot):
                 if give.get_statistic(member, "betting_worst_loss") < montant_mise:
                     give.set_statistic(member, "betting_worst_loss", montant_mise)
 
-            await success_checks.check_betting_success(interaction.member, montant_mise, interaction)
+            await success_checks.check_betting_success(interaction.user, montant_mise, interaction)
 
         from bets_display import update_bet_embed
         await update_bet_embed(interaction.client, bet_id)

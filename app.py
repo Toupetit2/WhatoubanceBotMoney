@@ -14,6 +14,9 @@ if not TOKEN:
 bot = Bot()
     
 async def main():
+    import logging
+    import discord
+    discord.utils.setup_logging(level=logging.INFO)
     await bot_setup(bot)
 
     async with bot:

@@ -15,8 +15,8 @@ class DicesView(discord.ui.View):
 
     async def handle_roll(self, interaction: discord.Interaction, roll_function):
         give.update_daily_streak(interaction.user)
-        await success_checks.register_day_played(interaction.member)
-        await success_checks.check_played_days_success(interaction.member, interaction)
+        success_checks.register_day_played(interaction.user)
+        await success_checks.check_played_days_success(interaction.user, interaction)
         give.increment_statistic(interaction.user, "luckydice_game_count")
         if self.answered:
             await interaction.response.send_message(
