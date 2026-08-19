@@ -108,28 +108,33 @@ CUSTOM_CSS = """
 }
 """
 
+import asyncio
+
+screenshot_semaphore = asyncio.Semaphore(1)
+
 async def screenshot_url(url: str, output_path: str = "screenshot.png"):
-    async with async_playwright() as p:
-        browser = await p.chromium.launch()
-        page = await browser.new_page(
-            viewport={"width": 1280, "height": 750},
-            device_scale_factor=2,
-        )
+    async with screenshot_semaphore:
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page(
+                viewport={"width": 1280, "height": 750},
+                device_scale_factor=2,
+            )
 
-        await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+            await page.goto(url, wait_until="networkidle", timeout=30000)
 
-        # Attendre que les polices soient chargées, pas juste le réseau
-        await page.evaluate("document.fonts.ready")
+            # Attendre que les polices soient chargées, pas juste le réseau
+            await page.evaluate("document.fonts.ready")
 
-        # Remettre le scroll en haut, au cas où une action précédente l'aurait décalé
-        await page.evaluate("window.scrollTo(0, 0)")
+            # Remettre le scroll en haut, au cas où une action précédente l'aurait décalé
+            await page.evaluate("window.scrollTo(0, 0)")
 
-        try:
-            await page.click("text=Accept", timeout=5000)
-        except Exception:
-            pass
+            try:
+                await page.click("text=Accept", timeout=5000)
+            except Exception:
+                pass
 
-        await page.add_style_tag(content=CUSTOM_CSS)
-        await page.wait_for_timeout(5000)  # laisse le CSS custom se stabiliser
-        await page.screenshot(path=output_path)
-        await browser.close()
+            await page.add_style_tag(content=CUSTOM_CSS)
+            await page.wait_for_timeout(5000)  # laisse le CSS custom se stabiliser
+            await page.screenshot(path=output_path)
+            await browser.close()
