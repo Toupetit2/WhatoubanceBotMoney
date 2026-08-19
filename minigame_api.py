@@ -116,7 +116,7 @@ async def screenshot_url(url: str, output_path: str = "screenshot.png"):
             device_scale_factor=2,
         )
 
-        await page.goto(url, wait_until="networkidle", timeout=60000)
+        await page.goto(url, wait_until="domcontentloaded", timeout=60000)
 
         # Attendre que les polices soient chargées, pas juste le réseau
         await page.evaluate("document.fonts.ready")
