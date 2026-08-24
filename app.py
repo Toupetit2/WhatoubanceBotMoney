@@ -20,7 +20,6 @@ bot = Bot()
 
 log = logging.getLogger("app")
 
-
 async def cleanup():
     log.info("🧹 Fermeture propre en cours...")
     await shutdown_browser()
@@ -28,10 +27,11 @@ async def cleanup():
         await bot.close()
     log.info("✅ Nettoyage terminé.")
 
-
 async def main():
     discord.utils.setup_logging(level=logging.INFO)
     await bot_setup(bot)
+
+    import platform
 
     loop = asyncio.get_running_loop()
     stop_event = asyncio.Event()
@@ -42,8 +42,10 @@ async def main():
 
     # SIGTERM = envoyé par systemctl restart/stop
     # SIGINT  = Ctrl+C
-    for sig in (signal.SIGTERM, signal.SIGINT):
-        loop.add_signal_handler(sig, _on_signal, sig)
+    # add_signal_handler n'est pas supporté sur Windows
+    if platform.system() != "Windows":
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            loop.add_signal_handler(sig, _on_signal, sig)
 
     async with bot:
         bot_task = asyncio.create_task(bot.start(TOKEN))
@@ -64,6 +66,5 @@ async def main():
             exc = bot_task.exception()
             if exc:
                 raise exc
-
 
 asyncio.run(main())
