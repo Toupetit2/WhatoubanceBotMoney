@@ -152,7 +152,7 @@ async def screenshot_url(url: str, output_path: str = "screenshot.png"):
             @font-face {{
                 font-family: 'Roboto';
                 src: url(data:font/woff2;base64,{font_b64}) format('woff2');
-                font-weight: 400;
+                font-weight: 350;
             }}
             * {{ font-family: 'Roboto', sans-serif !important; }}
         """)
