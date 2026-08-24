@@ -7,7 +7,7 @@ def setup(bot):
     @app_commands.guild_only()
     @bot.tree.command(name="setup_minigames", description="Lance le panneau des minijeu")
     async def setup_minigames_command(interaction: discord.Interaction):
-        image = discord.File("Images/clemouu.png", filename="clemou.png")
+        image = discord.File("Images/wtbgame.png", filename="image.png")
 
         await interaction.channel.send(
             "Panneau des minijeu",
