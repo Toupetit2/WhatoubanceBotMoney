@@ -110,6 +110,9 @@ CUSTOM_CSS = """
 * { animation: none !important; transition: none !important; }
 html { scrollbar-width: none; }
 html::-webkit-scrollbar { display: none; }
+.pt-\[1px\].text-white2.text-xs.font-medium {
+    white-space: nowrap !important;
+}
 """
 
 screenshot_semaphore = asyncio.Semaphore(1)
@@ -148,39 +151,27 @@ async def screenshot_url(url: str, output_path: str = "screenshot.png"):
 
             with open("/root/whatoubance-biff/fonts/roboto-regular.woff2", "rb") as f:
                 font_b64 = base64.b64encode(f.read()).decode()
-
             await page.add_style_tag(content=f"""
             @font-face {{
                 font-family: 'Roboto';
                 src: url(data:font/woff2;base64,{font_b64}) format('woff2');
                 font-weight: 400;
-                font-style: normal;
-                font-display: block;
             }}
+            * {{ font-family: 'Roboto', sans-serif !important; }}
+        """)
+            
+            await page.evaluate("document.fonts.ready")
 
-            html, body {{
-                font-family: 'Roboto', sans-serif !important;
-            }}
-            """)
+            try:
+                await page.click("text=Accept", timeout=3000)
+            except Exception:
+                pass
 
-            await page.evaluate("""
-            async () => {
-                await document.fonts.load('400 16px Roboto');
-                await document.fonts.ready;
-            }
-            """)
-
-            # Maintenant seulement les autres modifications CSS
             await page.add_style_tag(content=CUSTOM_CSS)
+            await page.wait_for_timeout(500)
 
-            # Laisse Chromium faire un cycle de layout/paint
-            await page.evaluate("""
-            () => new Promise(resolve =>
-                requestAnimationFrame(() =>
-                    requestAnimationFrame(resolve)
-                )
-            )
-            """)
+            await page.evaluate("window.scrollTo(0, 0)")
+            await page.wait_for_timeout(200)
 
             await page.screenshot(path=output_path)
         finally:
