@@ -134,6 +134,7 @@ async def get_browser():
         )
     return _browser
 
+import base64
 
 async def screenshot_url(url: str, output_path: str = "screenshot.png"):
     async with screenshot_semaphore:
@@ -144,10 +145,22 @@ async def screenshot_url(url: str, output_path: str = "screenshot.png"):
         )
         try:
             await page.goto(url, wait_until="load", timeout=30000)
+
+            with open("/root/whatoubance-biff/fonts/roboto-regular.woff2", "rb") as f:
+                font_b64 = base64.b64encode(f.read()).decode()
+            await page.add_style_tag(content=f"""
+            @font-face {{
+                font-family: 'Roboto';
+                src: url(data:font/woff2;base64,{font_b64}) format('woff2');
+                font-weight: 400;
+            }}
+            * {{ font-family: 'Roboto', sans-serif !important; }}
+        """)
+            
             await page.evaluate("document.fonts.ready")
 
             try:
-                await page.click("text=Accept", timeout=5000)
+                await page.click("text=Accept", timeout=3000)
             except Exception:
                 pass
 

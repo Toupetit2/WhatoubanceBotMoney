@@ -102,3 +102,6 @@ def crop_left_edge(source_path: str, output_path: str):
     tmp_path = output_path + ".tmp"
     cropped.save(tmp_path, format="PNG")
     os.replace(tmp_path, output_path)
+
+
+process_minigame_screenshot("new_screenshot.png", "new_screenshot_modified.png")
