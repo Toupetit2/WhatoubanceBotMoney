@@ -38,8 +38,6 @@ DEFAULT_CATALOGUE = {
     "1": [
         {"id": "ticket_loterie", "nom": "Ticket de loterie", "prix": 10,
          "quantite": None, "limit_par_jour": True},
-        {"id": "ticket_gold_lancement", "nom": "Ticket Goldé (Lancement)", "prix": 1,
-         "quantite": None, "limit_per_personne": 1, "requires_riot": True},
         {"id": "titre_client_passage", "nom": "Client de Passage", "prix": 300,
          "quantite": None, "limit_per_personne": 1, "titre": True, "unlocks_palier": 2},
     ],
