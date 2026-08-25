@@ -2,6 +2,7 @@ import discord
 import give
 import os
 from get_leaderboard import get_whatoubiffs_leaderboard, get_successes_leaderboard
+from boutique import get_title_progress
 
 EMOJI_WTBIFF = os.getenv("EMOJI_WTBIFF", "💰")
 
@@ -140,18 +141,24 @@ def get_profile_embed(user: discord.Member, page: int = 1):
         )
 
     elif page == 4:
-        categories = ["Des", "Mini jeu", "Paris", "Global"]
+        categories = ["Des", "Mini jeu", "Paris", "Boutique", "Global"]
         labels = {
             "Des": "🎲 Dés",
             "Mini jeu": "🎮 Mini jeu",
             "Paris": "🎰 Paris",
+            "Boutique": "🛒 Boutique",
             "Global": "🌐 Global"
         }
 
         lines = []
+
         for cat in categories:
-            unlocked, total = give.get_success_progress(user, cat)
-            lines.append(f"{labels[cat]} : {unlocked}/{total}")
+            if cat == "Boutique":
+                unlocked, total = get_title_progress(user)
+                lines.append(f"{labels[cat]} : {unlocked}/{total}")
+            else:
+                unlocked, total = give.get_success_progress(user, cat)
+                lines.append(f"{labels[cat]} : {unlocked}/{total}")
 
         global_unlocked, global_total = give.get_global_success_progress(user)
         lines.append(f"**Total : {global_unlocked}/{global_total}**")

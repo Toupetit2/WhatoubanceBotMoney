@@ -1,5 +1,5 @@
 import discord
-from give import get_statistic, set_statistic, increment_statistic ,unlock_success_and_notify, get_user_coins
+from give import get_statistic, set_statistic, increment_statistic ,unlock_success_and_notify, get_user_coins, give_coins
 
 import os
 
@@ -119,17 +119,20 @@ async def check_streak_success(member: discord.Member, interaction: discord.Inte
 async def check_riot_linked_success(member: discord.Member, interaction: discord.Interaction):
     from boutique import has_riot_linked  # réutilise RANK_ROLE_IDS déjà défini là-bas
     if has_riot_linked(member):
+        give_coins(100, member)
         await unlock_success_and_notify(member, "riot_account_linked", "Global", interaction)
 
 
 async def check_twitch_wtb_linked_success(member: discord.Member, interaction: discord.Interaction):
     if has_role(member, WTB_TAG_ROLE_ID):
+        give_coins(150, member)
         await unlock_success_and_notify(member, "twitch_wtb_tag_linked", "Global", interaction)
 
 
 async def check_whatoubance_club_success(member: discord.Member, interaction: discord.Interaction):
     from boutique import has_riot_linked
     if has_role(member, WHATOUBANCE_CLUB_ROLE_ID) and has_riot_linked(member):
+        give_coins(100, member)
         await unlock_success_and_notify(member, "whatoubance_club_riot_linked", "Global", interaction)
 
 

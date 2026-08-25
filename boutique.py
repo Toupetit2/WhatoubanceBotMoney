@@ -329,6 +329,12 @@ async def deliver_item(interaction: discord.Interaction, item: dict):
         )
 
 
+def get_title_progress(member: discord.Member):
+    users = load_users()
+    
+    return len(users.get("titres_possedes", [])), len(PALIER_EMOJIS)
+
+
 def build_boutique_embed() -> discord.Embed:
     boutique = get_boutique()
     embed = discord.Embed(title="Boutique", color=discord.Color.gold())

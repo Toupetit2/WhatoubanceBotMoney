@@ -55,12 +55,12 @@ class MinigameView(discord.ui.View):
             return
 
         self.answered = True
-        message = await minigame_answer(self.answer, guess, interaction)
 
         for child in self.children:
             child.disabled = True
 
         await interaction.response.edit_message(view=self)
+        message = await minigame_answer(self.answer, guess, interaction)
 
         if os.path.exists(self.raw_path):
             await interaction.followup.send(
