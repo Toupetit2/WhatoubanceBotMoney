@@ -355,3 +355,11 @@ def get_betting_win_rate(member: discord.Member):
     wins = get_statistic(member, "betting_wins", 0)
     return round((wins / total) * 100, 1)
 
+def has_success(member: discord.Member, category: str, name: str) -> bool:
+    import json, os
+    if os.path.exists(USERS_PATH) and os.path.getsize(USERS_PATH) > 0:
+        with open(USERS_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        user_id = str(member.id)
+        return name in data.get(user_id, {}).get("success", {}).get(category, [])
+    return False
