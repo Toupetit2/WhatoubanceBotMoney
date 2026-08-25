@@ -10,7 +10,7 @@ def setup(bot):
         image = discord.File("Images/wtbgame.jpg", filename="image.jpg")
 
         await interaction.channel.send(
-            "Panneau des minijeu",
+            "",
             file=image,
             view=MinigamesView()
         )
