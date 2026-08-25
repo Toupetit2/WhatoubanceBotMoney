@@ -125,7 +125,7 @@ async def check_riot_linked_success(member: discord.Member, interaction: discord
 
 async def check_twitch_wtb_linked_success(member: discord.Member, interaction: discord.Interaction):
     if has_role(member, WTB_TAG_ROLE_ID) and not has_success(member, "Global", "twitch_wtb_tag_linked"):
-        give_coins(150, member)
+        give_coins(200, member)
         await unlock_success_and_notify(member, "twitch_wtb_tag_linked", "Global", interaction)
 
 
