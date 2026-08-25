@@ -119,7 +119,7 @@ async def launch_minigame(interaction: discord.Interaction):
     try:
         print("[INFO] minijeu déclenché par", interaction.user.id)
 
-        if not can_play_today(interaction.user.id):
+        if not can_play_today(interaction.user.id, "mastermind"):
             await interaction.response.send_message(
                 "Tu as déjà joué aujourd'hui, reviens demain !",
                 ephemeral=True
@@ -137,7 +137,7 @@ async def launch_minigame(interaction: discord.Interaction):
         
         give.update_daily_streak(interaction.user)
         give.increment_statistic(interaction.user, "minigame1_game_count")
-        mark_played(interaction.user.id)
+        mark_played(interaction.user.id, "mastermind")
         await interaction.response.defer(ephemeral=True)
 
         user_raw_path = f"{interaction.user.id}_raw.png"

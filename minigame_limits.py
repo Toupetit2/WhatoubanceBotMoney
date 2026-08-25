@@ -9,41 +9,40 @@ import datetime
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data.json")
 
 
-def mark_played(user_ID: int):
+def mark_played(user_ID: int, game: str):
+    """game = 'luckydice' ou 'mastermind' (ou tout autre identifiant de jeu à limite quotidienne)."""
     data = {}
 
     if os.path.exists(DATA_PATH) and os.path.getsize(DATA_PATH) > 0:
         with open(DATA_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
-    
+
     user_id = str(user_ID)
 
     if user_id not in data:
-        data[user_id] = {"has_played": True}
+        data[user_id] = {}
 
-    if data[user_id].get("has_played") is None :
-        data[user_id]["has_played"] = True
-    else:
-        data[user_id]["has_played"] = True
+    data[user_id][f"has_played_{game}"] = True
 
     with open(DATA_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-    return data[user_id]["has_played"]
+    return data[user_id][f"has_played_{game}"]
 
-def can_play_today(user_ID: int):
+
+def can_play_today(user_ID: int, game: str):
     data = {}
 
     if os.path.exists(DATA_PATH) and os.path.getsize(DATA_PATH) > 0:
         with open(DATA_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
-    
+
     user_id = str(user_ID)
 
     if user_id not in data:
         return True
 
-    return not data[user_id].get("has_played", False)
+    return not data[user_id].get(f"has_played_{game}", False)
 
 
 paris_tz = zoneinfo.ZoneInfo("Europe/Paris")
@@ -57,7 +56,9 @@ async def reset_minigame():
             data = json.load(f)
 
         for user_id in data:
-            data[user_id]["has_played"] = False
+            for key in list(data[user_id].keys()):
+                if key.startswith("has_played_"):
+                    data[user_id][key] = False
 
         with open(DATA_PATH, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)

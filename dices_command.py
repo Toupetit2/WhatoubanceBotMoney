@@ -78,14 +78,14 @@ class DicesView(discord.ui.View):
                 message = f"Tu gagnes : {gain} {EMOJI_WTBIFF}"
                 give.increment_statistic(interaction.user, "loaded_dice_whatoubiffs_total", gain)
                 give.register_dice_roll(interaction.user, dices[0])
-                mark_played(interaction.user.id)
+                mark_played(interaction.user.id, "luckydice")
 
                 await success_checks.check_loaded_dice_success(interaction.user, dices[0], interaction)
 
             elif roll_function == magic_roll:
                 message = f"Tu gagnes : {gain} {EMOJI_WTBIFF}"
                 give.increment_statistic(interaction.user, "magic_roll_whatoubiffs_total", gain)
-                mark_played(interaction.user.id)
+                mark_played(interaction.user.id, "luckydice")
 
                 if dices == [1, 1, 1] or dices == [6, 6, 6]:
                     give.increment_statistic(interaction.user, "magic_roll_triple16")
@@ -100,7 +100,7 @@ class DicesView(discord.ui.View):
 
                 else:
                     message = f"Tu perd donc ta mise de {-gain} {EMOJI_WTBIFF}"
-                mark_played(interaction.user.id)
+                mark_played(interaction.user.id, "luckydice")
 
                 await success_checks.check_golden_gamble_success(interaction.user, gain>0, interaction)
 
@@ -129,7 +129,7 @@ class DicesView(discord.ui.View):
 
 
 async def launch_minigame(interaction: discord.Interaction):
-    if not can_play_today(interaction.user.id):
+    if not can_play_today(interaction.user.id, "luckydice"):
                 await interaction.response.send_message(
                     "Tu as déjà joué aujourd'hui, reviens demain !",
                     ephemeral=True
