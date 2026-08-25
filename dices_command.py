@@ -6,6 +6,7 @@ import random
 import give
 import success_checks
 
+EMOJI_WTBIFF = os.getenv("EMOJI_WTBIFF", "💰")
 
 class DicesView(discord.ui.View):
 
@@ -73,14 +74,14 @@ class DicesView(discord.ui.View):
             await interaction.edit_original_response(content=final_content, view=self)
 
             if roll_function == loaded_dice:
-                message = f"Tu gagnes : {gain} points"
+                message = f"Tu gagnes : {gain} {EMOJI_WTBIFF}"
                 give.increment_statistic(interaction.user, "loaded_dice_whatoubiffs_total", gain)
                 give.register_dice_roll(interaction.user, dices[0])
 
                 await success_checks.check_loaded_dice_success(interaction.user, dices[0], interaction)
 
             elif roll_function == magic_roll:
-                message = f"Tu gagnes : {gain} points"
+                message = f"Tu gagnes : {gain} {EMOJI_WTBIFF}"
                 give.increment_statistic(interaction.user, "magic_roll_whatoubiffs_total", gain)
 
                 if dices == [1, 1, 1] or dices == [6, 6, 6]:
@@ -90,12 +91,12 @@ class DicesView(discord.ui.View):
 
             elif roll_function == golden_gamble:
                 if gain > 0:
-                    message = f"Félicitations ! Tu gagnes : {gain + 50} points"
+                    message = f"Félicitations ! Tu gagnes : {gain + 50} {EMOJI_WTBIFF}"
                     give.increment_statistic(interaction.user, "golden_gamble_whatoubiffs_total", gain)
                     give.increment_statistic(interaction.user, "golden_gamble_total_wins")
 
                 else:
-                    message = f"Tu perd donc ta mise de {-gain} points"
+                    message = f"Tu perd donc ta mise de {-gain} {EMOJI_WTBIFF}"
 
                 await success_checks.check_golden_gamble_success(interaction.user, gain>0, interaction)
 

@@ -8,19 +8,20 @@ import give
 import minigames_gains
 import success_checks
 
+EMOJI_WTBIFF = os.getenv("EMOJI_WTBIFF", "💰")
 
 async def minigame_answer(answer: int, guess: int, interaction: discord.Interaction):
     points_repartition = minigames_gains.get_gains("find_placement")
 
     messages = {
-        0: "Parfait, excellent, admirable…  **Tu as tout juste**, tu gagnes **{points}** WhatouBiffs",
-        1: "A un cheveu de la perfection… **Tu étais à 1 près**, tu gagnes **{points}** WhatouBiffs\n*La réponse était : Top {answer}*",
-        2: "On va dire que c'était presque ça ! **Mais à 2 près** ... tu gagnes **{points}** WhatouBiffs\n*La réponse était : Top {answer}*",
-        3: "Là on commence à être un poil loin… **A 3 près tu avais juste**, tu gagnes **{points}** WhatouBiffs\n*La réponse était : Top {answer}*",
-        4: "Bon, tu feras mieux demain ! **Tu étais à 4 près**  mais tu gagnes quand même **{points}** WhatouBiffs\n*La réponse était : Top {answer}*",
-        5: "C'était surement un miss click non ? **Tu es a 5 près** ! Lot de consolation tu gagnes **{points}** WhatouBiffs\n*La réponse était : Top {answer}*",
-        6: 'Je vais dire que j\'ai rien vu, parce que toi non plus… **Tu es à 6 près**. tu "gagnes" **{points}** WhatouBiffs\n*La réponse était : Top {answer}*',
-        7: "Ca t'amuses de troll ? **TU ES A L'OPPOSE DE LA REALITE**  , tu gagnes **{points}** WhatouBiffs\n*La réponse était : Top {answer}*",
+        0: "Parfait, excellent, admirable…  **Tu as tout juste**, tu gagnes **{points}** {emoji}",
+        1: "A un cheveu de la perfection… **Tu étais à 1 près**, tu gagnes **{points}** {emoji}\n*La réponse était : Top {answer}*",
+        2: "On va dire que c'était presque ça ! **Mais à 2 près** ... tu gagnes **{points}** {emoji}\n*La réponse était : Top {answer}*",
+        3: "Là on commence à être un poil loin… **A 3 près tu avais juste**, tu gagnes **{points}** {emoji}\n*La réponse était : Top {answer}*",
+        4: "Bon, tu feras mieux demain ! **Tu étais à 4 près**  mais tu gagnes quand même **{points}** {emoji}\n*La réponse était : Top {answer}*",
+        5: "C'était surement un miss click non ? **Tu es a 5 près** ! Lot de consolation tu gagnes **{points}** {emoji}\n*La réponse était : Top {answer}*",
+        6: 'Je vais dire que j\'ai rien vu, parce que toi non plus… **Tu es à 6 près**. tu "gagnes" **{points}** {emoji}\n*La réponse était : Top {answer}*',
+        7: "Ca t'amuses de troll ? **TU ES A L'OPPOSE DE LA REALITE**  , tu gagnes **{points}** {emoji}\n*La réponse était : Top {answer}*",
     }
 
     distance = abs(answer - guess)
@@ -36,7 +37,7 @@ async def minigame_answer(answer: int, guess: int, interaction: discord.Interact
     days_played = success_checks.register_day_played(interaction.user)
     await success_checks.check_played_days_success(interaction.user, interaction)
 
-    return messages[distance].format(points=points_repartition[distance], answer=answer)
+    return messages[distance].format(points=points_repartition[distance], emoji=EMOJI_WTBIFF, answer=answer)
 
 
 class MinigameView(discord.ui.View):
