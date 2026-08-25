@@ -54,7 +54,7 @@ def get_profile_embed(user: discord.Member, page: int = 1):
         embed.add_field(name="📈 Classements", value=classement_text, inline=False)
 
         stats_text = (
-            f"Parties de MINIJEU1 : {minigame1_count}\n"
+            f"Parties de Master Mind : {minigame1_count}\n"
             f"Parties de Lucky Dice : {luckydice_count}\n"
             f"Série en cours : {current_streak} jour(s)\n"
             f"Meilleure série : {best_streak} jour(s)\n"
