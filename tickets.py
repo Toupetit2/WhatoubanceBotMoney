@@ -2,6 +2,7 @@ import json
 import os
 
 import discord
+from discord import app_commands
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data.json")
 
@@ -100,3 +101,12 @@ async def create_ticket_channel(
 
     return channel
 
+
+def setup(bot):
+    bot.add_view(DeleteTicketView())
+
+    @app_commands.default_permissions(administrator=True)
+    @bot.tree.command(name="create_ticket", description="Crée un ticket privé pour un membre")
+    async def create_ticket(interaction: discord.Interaction, member: discord.Member, nom: str, description: str):
+        channel = await create_ticket_channel(interaction.guild, member, nom, description)
+        await interaction.response.send_message(f"Ticket créé : {channel.mention}", ephemeral=True)
