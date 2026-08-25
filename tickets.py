@@ -100,11 +100,3 @@ async def create_ticket_channel(
 
     return channel
 
-
-def setup(bot):
-    bot.add_view(DeleteTicketView())
-
-    @bot.tree.command(name="create_ticket", description="Crée un ticket privé")
-    async def create_ticket(interaction: discord.Interaction, nom: str, description: str):
-        channel = await create_ticket_channel(interaction.guild, interaction.user, nom, description)
-        await interaction.response.send_message(f"Ticket créé : {channel.mention}", ephemeral=True)
