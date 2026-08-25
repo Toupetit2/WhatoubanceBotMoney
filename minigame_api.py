@@ -24,26 +24,83 @@ def get_cluster(platform: str) -> str:
         return "sea"
     raise ValueError(f"Plateforme inconnue : {platform}")
 
-def get_random_puuid():
-    server = random.choice(SERVER_LIST)
+TIERS = [
+    ("challenger", None),
+    ("grandmaster", None),
+    ("master", None),
+    ("diamond", "I"),
+    ("diamond", "II"),
+    ("diamond", "III"),
+    ("diamond", "IV"),
+    ("emerald", "I"),
+    ("emerald", "II"),
+    ("emerald", "III"),
+    ("emerald", "IV"),
+    ("platinum", "I"),
+    ("platinum", "II"),
+    ("platinum", "III"),
+    ("platinum", "IV"),
+    ("gold", "I"),
+    ("gold", "II"),
+    ("gold", "III"),
+    ("gold", "IV"),
+    ("silver", "I"),
+    ("silver", "II"),
+    ("silver", "III"),
+    ("silver", "IV"),
+    ("bronze", "I"),
+    ("bronze", "II"),
+    ("bronze", "III"),
+    ("bronze", "IV"),
+    ("iron", "I"),
+    ("iron", "II"),
+    ("iron", "III"),
+    ("iron", "IV"),
+]
 
-    url = f"https://{server}.api.riotgames.com/tft/league/v1/challenger"
+def get_top_ladder(server, min_players=50):
+    players = []
+
+    base_url = f"https://{server}.api.riotgames.com/tft/league/v1"
 
     headers = {
-        "X-Riot-Token": RIOT_API_KEY
+    "X-Riot-Token": RIOT_API_KEY
     }
+    
+    for tier, division in TIERS:
+        url = (
+            f"{base_url}/{tier}"
+            if division is None
+            else f"{base_url}/entries/{tier}/{division}"
+        )
 
-    params = {
-        "queue": "RANKED_TFT"
-    }
+        response = requests.get(
+            url,
+            headers=headers,
+            params={"queue": "RANKED_TFT"},
+            timeout=10
+        )
 
-    response = requests.get(url, headers=headers, params=params)
-    if response.status_code != 200:
-        print(f"Erreur Riot API : {response.status_code}")
-        return
+        if response.status_code != 200:
+            print(f"Erreur Riot API : {response.status_code}")
+            return
 
+        entries = response.json().get("entries", [])
+        players.extend(entries)
 
-    player_list = response.json()["entries"]
+        if len(players) >= min_players:
+            break
+
+    players.sort(
+        key=lambda player: player.get("leaguePoints", 0),
+        reverse=True
+    )
+
+    return players
+
+def get_random_puuid():
+    server = random.choice(SERVER_LIST)
+    player_list = get_top_ladder(server)
 
     return random.choice(player_list)["puuid"], server
 
