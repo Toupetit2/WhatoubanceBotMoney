@@ -68,7 +68,7 @@ def get_profile_embed(user: discord.Member, page: int = 1):
         minigame1_coins = give.get_statistic(user, "minigame1_whatoubiffs_total")
 
         embed.add_field(
-            name="🎯 MINIJEU1",
+            name="🎯 Master Mind",
             value=(
                 f"Nombre de parties : {minigame1_count}\n"
                 f"Moyenne de distance : {minigame1_avg_error}\n"
@@ -143,25 +143,24 @@ def get_profile_embed(user: discord.Member, page: int = 1):
     elif page == 4:
         categories = ["Des", "Mini jeu", "Paris", "Boutique", "Global"]
         labels = {
-            "Des": "🎲 Dés",
-            "Mini jeu": "🎮 Mini jeu",
+            "Des": "🎲 Lucky Dices",
+            "Mini jeu": "🎮 Master Mind",
             "Paris": "🎰 Paris",
             "Boutique": "🛒 Boutique",
             "Global": "🌐 Global"
         }
 
         lines = []
-
+        unlocked_shop, total_shop = get_title_progress(user)
         for cat in categories:
             if cat == "Boutique":
-                unlocked, total = get_title_progress(user)
-                lines.append(f"{labels[cat]} : {unlocked}/{total}")
+                lines.append(f"{labels[cat]} : {unlocked_shop}/{total_shop}")
             else:
                 unlocked, total = give.get_success_progress(user, cat)
                 lines.append(f"{labels[cat]} : {unlocked}/{total}")
 
         global_unlocked, global_total = give.get_global_success_progress(user)
-        lines.append(f"**Total : {global_unlocked}/{global_total}**")
+        lines.append(f"**Total : {global_unlocked}/{global_total+total_shop}**")
 
         embed.add_field(name="🏆 Succès Débloqués", value="\n".join(lines), inline=False)
     
