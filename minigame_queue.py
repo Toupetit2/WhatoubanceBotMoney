@@ -34,22 +34,23 @@ def save_queue(queue):
 def queue_size():
     return len(load_queue())
 
-
 async def generate_one():
-    """
-    Génère une entrée de minijeu. Renvoie l'id de l'entrée créée,
-    ou None si l'image générée est buggée (auquel cas tout est nettoyé).
-    """
     game_id = await asyncio.to_thread(minigame_api.get_random_gameid)
 
     entry_id = uuid.uuid4().hex
     raw_path = os.path.join(SCREENS_DIR, f"{entry_id}_raw.png")
     final_path = os.path.join(SCREENS_DIR, f"{entry_id}_final.png")
 
-    await minigame_api.screenshot_url(
+    ok = await minigame_api.screenshot_url(
         f"https://tactics.tools/player/euw/A/A/{game_id}",
         raw_path
     )
+
+    if not ok:
+        # Layout à 2 lignes détecté : on nettoie et on signale l'échec
+        if os.path.exists(raw_path):
+            os.remove(raw_path)
+        return None
 
     before_placements = await asyncio.to_thread(
         minigame_modify_png.process_minigame_screenshot,
@@ -58,7 +59,6 @@ async def generate_one():
     )
 
     if before_placements is None:
-        # Image buggée : on nettoie et on signale à l'appelant de passer au suivant
         for path in (raw_path, final_path):
             if os.path.exists(path):
                 os.remove(path)

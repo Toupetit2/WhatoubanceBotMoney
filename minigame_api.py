@@ -219,9 +219,29 @@ async def get_browser():
             ]
         )
     return _browser
+MAX_ITEMS_PER_ROW = 15
+GRID_SELECTOR = "[class*='gap-y-5'][class*='grid']"
 
 
-async def screenshot_url(url: str, output_path: str = "screenshot.png"):
+async def has_too_many_items(page) -> bool:
+    """True si une grille a plus de 15 enfants => elle passera sur 2 lignes
+    avec le CSS qui force repeat(15, ...)."""
+    max_children = await page.evaluate(
+        """(selector) => {
+            const grids = document.querySelectorAll(selector);
+            let max = 0;
+            for (const g of grids) {
+                if (g.children.length > max) max = g.children.length;
+            }
+            return max;
+        }""",
+        GRID_SELECTOR,
+    )
+    return max_children > MAX_ITEMS_PER_ROW
+
+
+async def screenshot_url(url: str, output_path: str = "screenshot.png") -> bool:
+    """Renvoie False (et ne sauvegarde rien) si le layout casserait en 2 lignes."""
     async with screenshot_semaphore:
         browser = await get_browser()
         page = await browser.new_page(
@@ -240,10 +260,13 @@ async def screenshot_url(url: str, output_path: str = "screenshot.png"):
             await page.add_style_tag(content=CUSTOM_CSS)
             await page.wait_for_timeout(500)
 
+            if await has_too_many_items(page):
+                return False
+
             await page.evaluate("window.scrollTo(0, 0)")
             await page.wait_for_timeout(200)
-
             await page.screenshot(path=output_path)
+            return True
         finally:
             await page.close()
 
@@ -257,3 +280,19 @@ async def shutdown_browser():
     if _playwright:
         await _playwright.stop()
         _playwright = None
+
+#test screenshot
+
+async def main():
+    try:
+        await screenshot_url(
+            "https://tactics.tools/player/euw/Redcode/000/EUW1_7962407341",
+            "test_screenshot2.png",
+        )
+        print("Capture créée : test_screenshot.png")
+    finally:
+        await shutdown_browser()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
