@@ -59,56 +59,77 @@ TIERS = [
 ]
 
 def get_top_ladder(server, min_players=50):
+    """
+    Récupère une liste de joueurs du ladder classé, en descendant les tiers
+    jusqu'à atteindre min_players. Ne renvoie jamais None : au pire une
+    liste vide si aucun tier n'a répondu correctement.
+    """
     players = []
 
     base_url = f"https://{server}.api.riotgames.com/tft/league/v1"
 
     headers = {
-    "X-Riot-Token": RIOT_API_KEY
+        "X-Riot-Token": RIOT_API_KEY
     }
-    
-    for tier, division in TIERS:
-        url = (
-            f"{base_url}/{tier}"
-            if division is None
-            else f"{base_url}/entries/{tier}/{division}"
-        )
 
-        response = requests.get(
-            url,
-            headers=headers,
-            params={"queue": "RANKED_TFT"},
-            timeout=10
-        )
+    for tier, division in TIERS:
+        if division is None:
+            url = f"{base_url}/{tier}"
+        else:
+            # L'endpoint /entries/{tier}/{division} attend le tier en MAJUSCULES
+            # (contrairement aux endpoints challenger/grandmaster/master).
+            url = f"{base_url}/entries/{tier.upper()}/{division}"
+
+        try:
+            response = requests.get(
+                url,
+                headers=headers,
+                params={"queue": "RANKED_TFT"},
+                timeout=10
+            )
+        except requests.RequestException as exc:
+            print(f"Erreur réseau sur {url} : {exc}")
+            continue
 
         if response.status_code != 200:
-            print(f"Erreur Riot API : {response.status_code}")
-            return
+            print(
+                f"Erreur Riot API ({response.status_code}) sur {url} : "
+                f"{response.text[:300]}"
+            )
+            continue
 
-        entries = response.json().get("entries", [])
+        data = response.json()
+        # /challenger, /grandmaster, /master renvoient un objet {"entries": [...]}
+        # /entries/{tier}/{division} renvoie directement une liste [...]
+        if isinstance(data, list):
+            entries = data
+        else:
+            entries = data.get("entries", [])
         players.extend(entries)
 
         if len(players) >= min_players:
             break
 
-    players.sort(
-        key=lambda player: player.get("leaguePoints", 0),
-        reverse=True
-    )
-
     return players
+
 
 def get_random_puuid():
     server = random.choice(SERVER_LIST)
     player_list = get_top_ladder(server)
 
+    if not player_list:
+        print(f"Aucun joueur récupéré pour le serveur {server}.")
+        return None, server
+
     return random.choice(player_list)["puuid"], server
+
 
 def get_random_gameid():
     puuid, platform = get_random_puuid()
     if puuid is None:
-        return
-    
+        print("Impossible de récupérer un puuid, abandon.")
+        return None
+
     cluster = get_cluster(platform)
 
     url = f"https://{cluster}.api.riotgames.com/tft/match/v1/matches/by-puuid/{puuid}/ids"
@@ -117,42 +138,47 @@ def get_random_gameid():
     }
 
     params = {
-        "count": 5 #game count
+        "count": 5  # game count
     }
 
     response = requests.get(url, headers=headers, params=params)
     if response.status_code != 200:
-        print(f"Erreur Riot API : {response.status_code}")
-        return
+        print(f"Erreur Riot API ({response.status_code}) sur {url} : {response.text[:300]}")
+        return None
 
     match_ids = response.json()
 
     if not match_ids:
         print("Aucun match trouvé pour ce joueur.")
-        return
+        return None
 
-    ranked_match_ids = []
-    while match_ids != []:
+    while match_ids:
         match_id = random.choice(match_ids)
         url = f"https://{cluster}.api.riotgames.com/tft/match/v1/matches/{match_id}"
 
         headers = {
-        "X-Riot-Token": RIOT_API_KEY
+            "X-Riot-Token": RIOT_API_KEY
         }
 
         response = requests.get(url, headers=headers)
 
         if response.status_code != 200:
-            print(f"Erreur Riot API : {response.status_code}")
-            return
+            print(f"Erreur Riot API ({response.status_code}) sur {url} : {response.text[:300]}")
+            match_ids.remove(match_id)
+            continue
 
-        is_ranked_solo = response.json()["info"]["queue_id"] == 1100
+        match_info = response.json()["info"]
 
-        if is_ranked_solo:
+        is_ranked_solo = match_info["queue_id"] == 1100
+        is_set_18 = match_info.get("tft_set_number") == 18
+
+        if is_ranked_solo and is_set_18:
             return match_id
 
         match_ids.remove(match_id)
 
+    # Plus aucun match ranked solo trouvé parmi les candidats : on retente
+    # avec un autre joueur plutôt que de boucler indéfiniment sur le même.
     return get_random_gameid()
 
 
@@ -194,6 +220,7 @@ async def get_browser():
         )
     return _browser
 
+
 async def screenshot_url(url: str, output_path: str = "screenshot.png"):
     async with screenshot_semaphore:
         browser = await get_browser()
@@ -202,7 +229,7 @@ async def screenshot_url(url: str, output_path: str = "screenshot.png"):
             device_scale_factor=2,
         )
         try:
-            await page.goto(url, wait_until="load", timeout=30000)            
+            await page.goto(url, wait_until="load", timeout=30000)
             await page.evaluate("document.fonts.ready")
 
             try:

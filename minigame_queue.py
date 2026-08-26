@@ -36,6 +36,10 @@ def queue_size():
 
 
 async def generate_one():
+    """
+    Génère une entrée de minijeu. Renvoie l'id de l'entrée créée,
+    ou None si l'image générée est buggée (auquel cas tout est nettoyé).
+    """
     game_id = await asyncio.to_thread(minigame_api.get_random_gameid)
 
     entry_id = uuid.uuid4().hex
@@ -52,6 +56,14 @@ async def generate_one():
         raw_path,
         final_path
     )
+
+    if before_placements is None:
+        # Image buggée : on nettoie et on signale à l'appelant de passer au suivant
+        for path in (raw_path, final_path):
+            if os.path.exists(path):
+                os.remove(path)
+        return None
+
     answer = before_placements[3] + 1
 
     minigame_modify_png.crop_left_edge(raw_path, raw_path)
@@ -72,10 +84,15 @@ async def refill_queue():
     while queue_size() < TARGET_SIZE:
         try:
             entry_id = await generate_one()
-            print(f"[INFO] minijeu pré-généré ajouté : {entry_id} (file: {queue_size()}/{TARGET_SIZE})", flush=True)
         except Exception as e:
             print(f"[ERROR] échec génération minijeu : {e}", flush=True)
             break
+
+        if entry_id is None:
+            print("[INFO] image buggée détectée, passage au suivant", flush=True)
+            continue
+
+        print(f"[INFO] minijeu pré-généré ajouté : {entry_id} (file: {queue_size()}/{TARGET_SIZE})", flush=True)
 
 
 def pop_one():

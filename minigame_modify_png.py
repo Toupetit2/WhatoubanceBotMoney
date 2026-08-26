@@ -18,8 +18,7 @@ def remove_top_before_band(img: Image.Image, band_color=(103, 164, 227), toleran
     matching_rows = np.where(row_matches)[0]
 
     if len(matching_rows) == 0:
-        print("no matching row")
-        return img  # bande introuvable, on ne coupe rien
+        return None  # bande introuvable, on ne coupe rien
 
     band_bottom = int(matching_rows.max()) + 1
     return img.crop((0, band_bottom, img.width, img.height))
@@ -41,6 +40,10 @@ def process_minigame_screenshot(source_path: str, output_path: str):
 
     img = Image.open(source_path)
     img = remove_top_before_band(img)
+
+    if img is None:
+        print("Error: Could not process image.")
+        return None
 
     # 1. mélanger les lignes de joueurs, en gardant la trace des indices d'origine
     bands = []
