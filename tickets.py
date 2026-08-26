@@ -110,3 +110,4 @@ def setup(bot):
     async def create_ticket(interaction: discord.Interaction, member: discord.Member, nom: str, description: str):
         channel = await create_ticket_channel(interaction.guild, member, nom, description)
         await interaction.response.send_message(f"Ticket créé : {channel.mention}", ephemeral=True)
+

@@ -7,14 +7,15 @@ import datetime
 
 
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data.json")
+USER_DATA_PATH = os.path.join(os.path.dirname(__file__), "users.json")
 
 
 def mark_played(user_ID: int, game: str):
     """game = 'luckydice' ou 'mastermind' (ou tout autre identifiant de jeu à limite quotidienne)."""
     data = {}
 
-    if os.path.exists(DATA_PATH) and os.path.getsize(DATA_PATH) > 0:
-        with open(DATA_PATH, "r", encoding="utf-8") as f:
+    if os.path.exists(USER_DATA_PATH) and os.path.getsize(USER_DATA_PATH) > 0:
+        with open(USER_DATA_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
 
     user_id = str(user_ID)
@@ -24,7 +25,7 @@ def mark_played(user_ID: int, game: str):
 
     data[user_id][f"has_played_{game}"] = True
 
-    with open(DATA_PATH, "w", encoding="utf-8") as f:
+    with open(USER_DATA_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
     return data[user_id][f"has_played_{game}"]
@@ -33,8 +34,8 @@ def mark_played(user_ID: int, game: str):
 def can_play_today(user_ID: int, game: str):
     data = {}
 
-    if os.path.exists(DATA_PATH) and os.path.getsize(DATA_PATH) > 0:
-        with open(DATA_PATH, "r", encoding="utf-8") as f:
+    if os.path.exists(USER_DATA_PATH) and os.path.getsize(USER_DATA_PATH) > 0:
+        with open(USER_DATA_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
 
     user_id = str(user_ID)
@@ -51,8 +52,8 @@ paris_tz = zoneinfo.ZoneInfo("Europe/Paris")
 async def reset_minigame():
     print("[INFO] RESET MINIGAME HAS_PLAYED FLAGS")
 
-    if os.path.exists(DATA_PATH) and os.path.getsize(DATA_PATH) > 0:
-        with open(DATA_PATH, "r", encoding="utf-8") as f:
+    if os.path.exists(USER_DATA_PATH) and os.path.getsize(USER_DATA_PATH) > 0:
+        with open(USER_DATA_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         for user_id in data:
@@ -60,7 +61,7 @@ async def reset_minigame():
                 if key.startswith("has_played_"):
                     data[user_id][key] = False
 
-        with open(DATA_PATH, "w", encoding="utf-8") as f:
+        with open(USER_DATA_PATH, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
 
 
