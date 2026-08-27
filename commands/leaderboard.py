@@ -14,16 +14,20 @@ PAGE_SIZE = 10
 MEDALS = ["🥇", "🥈", "🥉"]
 EMOJI_WTBIFF = os.getenv("EMOJI_WTBIFF", "💰")
 
-def build_summary_embed():
+def build_summary_embed(guild: discord.Guild):
     """Embed principal avec top 10 monnaie + top 10 succès côte à côte."""
     leaderboard = get_whatoubiffs_leaderboard()[:10]
     successes_leaderboard = get_successes_leaderboard()[:10]
 
     embed = discord.Embed(title="🏆 Leaderboards", color=discord.Color.gold())
 
+    def display_name(user_id):
+        member = guild.get_member(int(user_id))
+        return member.display_name if member else f"Utilisateur inconnu"
+
     if leaderboard:
         lines = [
-            f"{MEDALS[i] if i < 3 else f'#{i+1}'} <@{user_id}> — {monnaie:>6} {EMOJI_WTBIFF}"
+            f"{MEDALS[i] if i < 3 else f'#{i+1}'} {display_name(user_id)} — {monnaie:>6} {EMOJI_WTBIFF}"
             for i, (user_id, monnaie) in enumerate(leaderboard)
         ]
         embed.add_field(name="**Whatoubiffs**", value="\n".join(lines), inline=True)
@@ -33,7 +37,7 @@ def build_summary_embed():
 
     if successes_leaderboard:
         lines = [
-            f"{MEDALS[i] if i < 3 else f'#{i+1}'} <@{user_id}> — {count:>3} succès"
+            f"{MEDALS[i] if i < 3 else f'#{i+1}'} {display_name(user_id)} — {count:>3} succès"
             for i, (user_id, count) in enumerate(successes_leaderboard)
         ]
         embed.add_field(name="**Succès**", value="\n".join(lines), inline=True)
@@ -43,8 +47,7 @@ def build_summary_embed():
 
     return embed
 
-
-def build_paginated_embed(kind: str, page: int):
+def build_paginated_embed(kind: str, page: int, guild: discord.Guild):
     """Embed d'une page (10 par page) pour un classement complet (monnaie ou succès)."""
     if kind == "monnaie":
         full_leaderboard = get_whatoubiffs_leaderboard()
@@ -61,13 +64,17 @@ def build_paginated_embed(kind: str, page: int):
     start = page * PAGE_SIZE
     chunk = full_leaderboard[start:start + PAGE_SIZE]
 
+    def display_name(user_id):
+        member = guild.get_member(int(user_id))
+        return member.display_name if member else f"Utilisateur inconnu"
+
     if not chunk:
         description = "Aucun membre trouvé."
     else:
         lines = []
         for i, (user_id, value) in enumerate(chunk, start=start):
             rank = MEDALS[i] if i < 3 else f"#{i + 1}"
-            lines.append(f"{rank} <@{user_id}> — {unit(value)}")
+            lines.append(f"{rank} {display_name(user_id)} — {unit(value)}")
         description = "\n".join(lines)
 
     embed = discord.Embed(title=title, description=description, color=discord.Color.gold())
@@ -131,16 +138,16 @@ class UserPickerView(discord.ui.View):
             await interaction.response.edit_message(content=None, embed=embed, view=view)
 
 # ---------- Views ----------
-
 class PaginatedLeaderboardView(discord.ui.View):
-    def __init__(self, kind: str, page: int = 0):
+    def __init__(self, kind: str, guild: discord.Guild, page: int = 0):
         super().__init__(timeout=None)
         self.kind = kind
+        self.guild = guild
         self.page = page
         self._update_button_states()
 
     def _update_button_states(self):
-        _, page, total_pages = build_paginated_embed(self.kind, self.page)
+        _, page, total_pages = build_paginated_embed(self.kind, self.page, self.guild)
         self.page = page
         self.previous_button.disabled = self.page <= 0
         self.next_button.disabled = self.page >= total_pages - 1
@@ -148,14 +155,14 @@ class PaginatedLeaderboardView(discord.ui.View):
     @discord.ui.button(label="◀", style=discord.ButtonStyle.secondary)
     async def previous_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.page -= 1
-        embed, self.page, _ = build_paginated_embed(self.kind, self.page)
+        embed, self.page, _ = build_paginated_embed(self.kind, self.page, self.guild)
         self._update_button_states()
         await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(label="▶", style=discord.ButtonStyle.secondary)
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.page += 1
-        embed, self.page, _ = build_paginated_embed(self.kind, self.page)
+        embed, self.page, _ = build_paginated_embed(self.kind, self.page, self.guild)
         self._update_button_states()
         await interaction.response.edit_message(embed=embed, view=self)
 
@@ -167,14 +174,14 @@ class LeaderboardView(discord.ui.View):
     # Row 0
     @discord.ui.button(label="💰 Ladder WhatouBiffs ", style=discord.ButtonStyle.secondary, custom_id="ranking_wtbiffs", row=0)
     async def full_monnaie_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        embed, page, _ = build_paginated_embed("monnaie", 0)
-        view = PaginatedLeaderboardView("monnaie", page)
+        embed, page, _ = build_paginated_embed("monnaie", 0, interaction.guild)
+        view = PaginatedLeaderboardView("monnaie", interaction.guild, page)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     @discord.ui.button(label="🏆 Ladder Succès", style=discord.ButtonStyle.secondary, custom_id="ranking_successes", row=0)
     async def full_success_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        embed, page, _ = build_paginated_embed("success", 0)
-        view = PaginatedLeaderboardView("success", page)
+        embed, page, _ = build_paginated_embed("success", 0, interaction.guild)
+        view = PaginatedLeaderboardView("success", interaction.guild, page)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
 
     # Row 1 — moi
@@ -236,10 +243,8 @@ def save_leaderboard_ref():
 
 leaderboard_message_ref.update(load_leaderboard_ref())
 
-
 async def send_leaderboard(channel: discord.abc.GuildChannel):
-    #file = discord.File("Images/Leaderboard.png", filename="leaderboards.png")
-    msg = await channel.send(embed=build_summary_embed(), view=LeaderboardView())
+    msg = await channel.send(embed=build_summary_embed(channel.guild), view=LeaderboardView())
     leaderboard_message_ref["channel_id"] = msg.channel.id
     leaderboard_message_ref["message_id"] = msg.id
     save_leaderboard_ref()
@@ -256,7 +261,7 @@ async def update_leaderboard(bot: discord.Client):
 
     try:
         message = await channel.fetch_message(leaderboard_message_ref["message_id"])
-        await message.edit(embed=build_summary_embed())
+        await message.edit(embed=build_summary_embed(channel.guild))
         return True
     except discord.NotFound:
         return False
