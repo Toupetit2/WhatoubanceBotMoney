@@ -11,4 +11,5 @@ def setup(bot):
         new_balance = give.give_coins(amount, member)
         if amount > 0:
             await interaction.response.send_message(f"✅{member.display_name} a reçu {amount} coins, il en a maintenant {new_balance}", ephemeral=True)
-        await interaction.response.send_message(f"✅{member.display_name} a perdu {-amount} coins, il en a maintenant {new_balance}", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"✅{member.display_name} a perdu {-amount} coins, il en a maintenant {new_balance}", ephemeral=True)
