@@ -47,8 +47,8 @@ async def minigame_answer(answer: int, guess: int, interaction: discord.Interact
 
 class MinigameView(discord.ui.View):
 
-    def __init__(self, answer, raw_path):
-        super().__init__()
+    def __init__(self, answer, raw_path, timeout=600):
+        super().__init__(timeout=timeout)
         self.answer = answer
         self.raw_path = raw_path
         self.answered = False

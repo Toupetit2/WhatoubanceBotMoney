@@ -23,7 +23,8 @@ def build_summary_embed(guild: discord.Guild):
 
     def display_name(user_id):
         member = guild.get_member(int(user_id))
-        return member.display_name if member else f"Utilisateur inconnu"
+        name = member.display_name if member else "Utilisateur inconnu"
+        return f"**{name}**"
 
     if leaderboard:
         lines = [
@@ -66,7 +67,8 @@ def build_paginated_embed(kind: str, page: int, guild: discord.Guild):
 
     def display_name(user_id):
         member = guild.get_member(int(user_id))
-        return member.display_name if member else f"Utilisateur inconnu"
+        name = member.display_name if member else "Utilisateur inconnu"
+        return f"**{name}**"
 
     if not chunk:
         description = "Aucun membre trouvé."
