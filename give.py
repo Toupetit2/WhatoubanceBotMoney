@@ -233,9 +233,6 @@ def get_unlocked_titles(member: discord.Member) -> list[str]:
             if titre:
                 titles.append(titre)
 
-    # 👇 titres achetés en boutique
-    titles.extend(user_data.get("titres_possedes", []))
-
     return titles
 
 # ---------------- Statistiques ----------------

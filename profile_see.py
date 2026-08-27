@@ -2,7 +2,6 @@ import discord
 import give
 import os
 from get_leaderboard import get_whatoubiffs_leaderboard, get_successes_leaderboard
-from boutique import get_title_progress
 
 EMOJI_WTBIFF = os.getenv("EMOJI_WTBIFF", "💰")
 
@@ -64,7 +63,7 @@ def get_profile_embed(user: discord.Member, page: int = 1):
 
     elif page == 2:
         minigame1_count = give.get_statistic(user, "minigame1_game_count")
-        minigame1_avg_error = round(give.get_statistic(user, "minigame1_average_error") / 100 * 8, 2)
+        minigame1_avg_error = round(give.get_statistic(user, "minigame1_average_error"), 2)
         minigame1_coins = give.get_statistic(user, "minigame1_whatoubiffs_total")
 
         embed.add_field(
@@ -151,16 +150,12 @@ def get_profile_embed(user: discord.Member, page: int = 1):
         }
 
         lines = []
-        unlocked_shop, total_shop = get_title_progress(user)
         for cat in categories:
-            if cat == "Boutique":
-                lines.append(f"{labels[cat]} : {unlocked_shop}/{total_shop}")
-            else:
-                unlocked, total = give.get_success_progress(user, cat)
-                lines.append(f"{labels[cat]} : {unlocked}/{total}")
+            unlocked, total = give.get_success_progress(user, cat)
+            lines.append(f"{labels[cat]} : {unlocked}/{total}")
 
         global_unlocked, global_total = give.get_global_success_progress(user)
-        lines.append(f"**Total : {global_unlocked}/{global_total+total_shop}**")
+        lines.append(f"**Total : {global_unlocked}/{global_total}**")
 
         embed.add_field(name="🏆 Succès Débloqués", value="\n".join(lines), inline=False)
     

@@ -7,6 +7,8 @@ import discord
 from discord import app_commands
 from discord.ext import tasks
 
+import give
+
 from tickets import create_ticket_channel
 
 import loterie
@@ -202,6 +204,27 @@ def get_boutique() -> dict:
 def save_boutique(boutique: dict):
     with open(BOUTIQUE_PATH, "w", encoding="utf-8") as f:
         json.dump(boutique, f, ensure_ascii=False, indent=2)
+    sync_boutique_successes(boutique)
+
+
+def sync_boutique_successes(boutique: dict = None):
+    """Enregistre chaque titre vendable en boutique comme un succès de la
+    catégorie 'Boutique', pour qu'il soit débloqué/affiché comme n'importe
+    quel autre succès."""
+    if boutique is None:
+        boutique = get_boutique()
+    for palier, items in boutique.items():
+        for item in items:
+            if not item.get("titre"):
+                continue
+            give.add_success(
+                name=item["id"],
+                category="Boutique",
+                description=f"Palier {palier} — {item['prix']} {EMOJI_WTBIFF}",
+                title=item["nom"],
+            )
+
+sync_boutique_successes()
 
 def find_item(palier: str, item_id: str = None, nom: str = None):
     boutique = get_boutique()
@@ -281,9 +304,9 @@ def try_purchase(guild_member: discord.Member, palier: str, item: dict):
     achats[item_id] = historique
 
     if item.get("titre"):
-        titres = user_data.setdefault("titres_possedes", [])
-        if item["nom"] not in titres:
-            titres.append(item["nom"])
+        succes_boutique = user_data.setdefault("success", {}).setdefault("Boutique", [])
+        if item["id"] not in succes_boutique:
+            succes_boutique.append(item["id"])
 
     if item.get("unlocks_palier"):
         state["palier_debloque"] = max(state.get("palier_debloque", 1), item["unlocks_palier"])

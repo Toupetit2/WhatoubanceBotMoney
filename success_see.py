@@ -5,7 +5,6 @@ import discord
 
 USERS_PATH = "users.json"
 SUCCESSES_PATH = "successes.json"
-BOUTIQUE_PATH = "boutique.json"
 
 
 def load_json(path: str) -> dict:
@@ -45,43 +44,7 @@ def get_category_embed(user: discord.User, category: str, categories: list) -> d
     return embed
 
 
-def get_boutique_titles_embed(user: discord.User, categories: list) -> discord.Embed:
-    boutique = load_json(BOUTIQUE_PATH)
-    users = load_json(USERS_PATH)
-
-    user_data = users.get(str(user.id), {})
-    titres_possedes = set(user_data.get("titres_possedes", []))
-
-    embed = discord.Embed(
-        title="Boutique",
-        color=discord.Color.gold(),
-    )
-    embed.set_author(name=f"Succès de {user.display_name}")
-
-    trouve_un_titre = False
-    for palier, items in boutique.items():
-        for item in items:
-            if not item.get("titre"):
-                continue
-            trouve_un_titre = True
-            nom = item["nom"]
-            if nom in titres_possedes:
-                valeur = f'✅ Titre "{nom}"'
-            else:
-                valeur = "❌"
-            embed.add_field(name=f"Palier {palier} — {item['prix']} WhatouBiffs", value=valeur, inline=False)
-
-    if not trouve_un_titre:
-        embed.description = "Aucun titre disponible en boutique."
-
-    embed.set_footer(text=f"Page {categories.index('Boutique') + 1}/{len(categories)}")
-
-    return embed
-
-
 def build_page_embed(user: discord.User, category: str, categories: list) -> discord.Embed:
-    if category == "Boutique":
-        return get_boutique_titles_embed(user, categories)
     return get_category_embed(user, category, categories)
 
 
@@ -117,7 +80,7 @@ def setup(bot):
     async def get_successes(interaction: discord.Interaction, member: discord.Member = None):
         user = member or interaction.user
         successes_def = load_json(SUCCESSES_PATH)
-        categories = list(successes_def.keys()) + ["Boutique"]
+        categories = list(successes_def.keys())
 
         view = SuccessesView(user, categories)
         embed = build_page_embed(user, categories[0], categories)

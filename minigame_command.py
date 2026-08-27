@@ -31,7 +31,12 @@ async def minigame_answer(answer: int, guess: int, interaction: discord.Interact
 
     give.give_coins(points_repartition[distance], interaction.user)
     give.increment_statistic(interaction.user, "minigame1_whatoubiffs_total", points_repartition[distance])
-    give.set_statistic(interaction.user, "minigame1_average_error", give.get_statistic(interaction.user, "minigame1_average_error")+(points_repartition[distance]/give.get_statistic(interaction.user, "minigame1_game_count")))
+
+    game_count = give.get_statistic(interaction.user, "minigame1_game_count")  # incrémenté AVANT ce calcul
+    old_avg = give.get_statistic(interaction.user, "minigame1_average_error")
+    new_value = distance  # pas points_repartition[distance]
+    new_avg = old_avg + (new_value - old_avg) / game_count
+    give.set_statistic(interaction.user, "minigame1_average_error", new_avg)
 
     await success_checks.check_minigame_success(interaction.user, distance, interaction)
     days_played = success_checks.register_day_played(interaction.user)

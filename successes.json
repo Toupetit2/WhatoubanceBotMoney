@@ -1,86 +1,104 @@
 {
-  "Des": {
-    "win_3_golden_gamble": {
-      "description": "Gagner 3 Golden Gamble à la suite",
-      "title": "Aligneur d'Astres"
+    "Des": {
+        "win_3_golden_gamble": {
+            "description": "Gagner 3 Golden Gamble à la suite",
+            "title": "Aligneur d'Astres"
+        },
+        "magic_roll_triple_1_or_6": {
+            "description": "Obtenir triple 1 ou triple 6 au Magic Roll",
+            "title": "Élu du Destin"
+        },
+        "loaded_dice_3_consecutive_sixes": {
+            "description": "Obtenir 3 jours consécutifs 6 au Loaded Dice",
+            "title": "Maitre du Jeu"
+        },
+        "lose_6_golden_gamble": {
+            "description": "Perdre 6 Golden Gamble à la suite",
+            "title": "Chat Noir"
+        },
+        "loaded_dice_10_or_11_4_days": {
+            "description": "Obtenir le score de 10 ou 11 4 jours de suite au Loaded Dice",
+            "title": "Low Roller"
+        },
+        "loaded_dice_3_consecutive_ones": {
+            "description": "Obtenir 3 jours de suite 1 au Loaded Dice",
+            "title": "Le maudit"
+        }
     },
-    "magic_roll_triple_1_or_6": {
-      "description": "Obtenir triple 1 ou triple 6 au Magic Roll",
-      "title": "Élu du Destin"
+    "Paris": {
+        "bet_profit_5000": {
+            "description": "Être en positif de 5000 WhatouBiffs en pariant",
+            "title": "Génie des Pronos"
+        },
+        "single_bet_1000": {
+            "description": "Miser 1000 WhatouBiffs dans un seul pari",
+            "title": "ALL IN"
+        }
     },
-    "loaded_dice_3_consecutive_sixes": {
-      "description": "Obtenir 3 jours consécutifs 6 au Loaded Dice",
-      "title": "Maitre du Jeu"
+    "Mini jeu": {
+        "minigame_exact_score_5_times": {
+            "description": "Trouver 5 fois d'affilée le score exact lors du mini jeu",
+            "title": "Mastermind"
+        },
+        "minigame_opposite_total": {
+            "description": "Être au total opposé lors du mini jeu",
+            "title": "Fraude Certifiée"
+        },
+        "minigame_one_away_3_times": {
+            "description": "Être 3 fois d'affilée à 1 de distance lors du mini jeu",
+            "title": "Frôleur De Gloire"
+        }
     },
-    "lose_6_golden_gamble": {
-      "description": "Perdre 6 Golden Gamble à la suite",
-      "title": "Chat Noir"
+    "Global": {
+        "profile_viewed": {
+            "description": "Voir son profil",
+            "title": "Narcissique"
+        },
+        "reach_50000_whatoubiffs": {
+            "description": "Atteindre 50 000 WhatouBiffs",
+            "title": "Nouveau Riche"
+        },
+        "streak_30_days": {
+            "description": "30 jours de streak",
+            "title": "Abonné à Vie"
+        },
+        "riot_account_linked": {
+            "description": "Connecter son compte Riot (donne 100 WhatouBiffs)",
+            "title": "Lock In"
+        },
+        "twitch_wtb_tag_linked": {
+            "description": "Posséder le tag WTB sur Twitch et lier son compte (donne 200 WhatouBiffs)",
+            "title": "Whatoubance Army"
+        },
+        "whatoubance_club_riot_linked": {
+            "description": "Être dans le club Whatoubance et lier son compte Riot (donne 100 WhatouBiffs)",
+            "title": "Membre du club"
+        },
+        "full_shop_unlocked": {
+            "description": "Débloquer toute la boutique (achat des 4 titres)",
+            "title": "Actionnaire Majoritaire"
+        },
+        "played_100_days": {
+            "description": "Jouer 100 jours au total",
+            "title": "Accroc aux Jeux"
+        }
     },
-    "loaded_dice_10_or_11_4_days": {
-      "description": "Obtenir le score de 10 ou 11 4 jours de suite au Loaded Dice",
-      "title": "Low Roller"
-    },
-    "loaded_dice_3_consecutive_ones": {
-      "description": "Obtenir 3 jours de suite 1 au Loaded Dice",
-      "title": "Le maudit"
+    "Boutique": {
+        "titre_client_passage": {
+            "description": "Palier 1 — 300 <:WTBIFF:1535351080173441136>",
+            "title": "Client de Passage"
+        },
+        "titre_actionnaire": {
+            "description": "Palier 2 — 1200 <:WTBIFF:1535351080173441136>",
+            "title": "Actionnaire"
+        },
+        "titre_membre_conseil": {
+            "description": "Palier 3 — 2500 <:WTBIFF:1535351080173441136>",
+            "title": "Membre du conseil"
+        },
+        "titre_proprietaire": {
+            "description": "Palier 4 — 3000 <:WTBIFF:1535351080173441136>",
+            "title": "Propriétaire des lieux"
+        }
     }
-  },
-  "Paris": {
-    "bet_profit_5000": {
-      "description": "Être en positif de 5000 WhatouBiffs en pariant",
-      "title": "Génie des Pronos"
-    },
-    "single_bet_1000": {
-      "description": "Miser 1000 WhatouBiffs dans un seul pari",
-      "title": "ALL IN"
-    }
-  },
-  "Mini jeu": {
-    "minigame_exact_score_5_times": {
-      "description": "Trouver 5 fois d'affilée le score exact lors du mini jeu",
-      "title": "Mastermind"
-    },
-    "minigame_opposite_total": {
-      "description": "Être au total opposé lors du mini jeu",
-      "title": "Fraude Certifiée"
-    },
-    "minigame_one_away_3_times": {
-      "description": "Être 3 fois d'affilée à 1 de distance lors du mini jeu",
-      "title": "Frôleur De Gloire"
-    }
-  },
-  "Global": {
-    "profile_viewed": {
-      "description": "Voir son profil",
-      "title": "Narcissique"
-    },
-    "reach_50000_whatoubiffs": {
-      "description": "Atteindre 50 000 WhatouBiffs",
-      "title": "Nouveau Riche"
-    },
-    "streak_30_days": {
-      "description": "30 jours de streak",
-      "title": "Abonné à Vie"
-    },
-    "riot_account_linked": {
-      "description": "Connecter son compte Riot (donne 100 WhatouBiffs)",
-      "title": "Lock In"
-    },
-    "twitch_wtb_tag_linked": {
-      "description": "Posséder le tag WTB sur Twitch et lier son compte (donne 200 WhatouBiffs)",
-      "title": "Whatoubance Army"
-    },
-    "whatoubance_club_riot_linked": {
-      "description": "Être dans le club Whatoubance et lier son compte Riot (donne 100 WhatouBiffs)",
-      "title": "Membre du club"
-    },
-    "full_shop_unlocked": {
-      "description": "Débloquer toute la boutique (achat des 4 titres)",
-      "title": "Actionnaire Majoritaire"
-    },
-    "played_100_days": {
-      "description": "Jouer 100 jours au total",
-      "title": "Accroc aux Jeux"
-    }
-  }
 }
