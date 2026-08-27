@@ -32,7 +32,6 @@ def mark_played(user_ID: int, game: str):
 
 
 def can_play_today(user_ID: int, game: str):
-    return True
     data = {}
 
     if os.path.exists(USER_DATA_PATH) and os.path.getsize(USER_DATA_PATH) > 0:
