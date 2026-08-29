@@ -13,6 +13,7 @@ REF_PATH = os.path.join(os.path.dirname(__file__), "leaderboard_ref.json")
 PAGE_SIZE = 10
 MEDALS = ["🥇", "🥈", "🥉"]
 EMOJI_WTBIFF = os.getenv("EMOJI_WTBIFF", "💰")
+GUILD_ID = int(os.getenv("GUILD_ID", "0"))
 
 def build_summary_embed(guild: discord.Guild):
     """Embed principal avec top 10 monnaie + top 10 succès côte à côte."""
@@ -263,7 +264,7 @@ async def update_leaderboard(bot: discord.Client):
 
     try:
         message = await channel.fetch_message(leaderboard_message_ref["message_id"])
-        await message.edit(embed=build_summary_embed())
+        await message.edit(embed=build_summary_embed(channel.guild), view=LeaderboardView())
         return True
     except discord.NotFound:
         return False
