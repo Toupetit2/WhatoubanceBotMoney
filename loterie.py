@@ -187,7 +187,7 @@ class LoterieView(discord.ui.View):
         super().__init__(timeout=None)  # timeout=None + custom_id => bouton persistant
 
     @discord.ui.button(
-        label="Mes tickets 🎟️",
+        label="Mes tickets",
         style=discord.ButtonStyle.blurple,
         custom_id="loterie_mes_tickets",
     )
