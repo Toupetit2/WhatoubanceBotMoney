@@ -51,6 +51,9 @@ async def refresh_minigames_panel(bot: discord.Client):
         await old_message.delete()
     except discord.NotFound:
         pass
+    except (discord.DiscordServerError, discord.HTTPException) as e:
+        print(f"[WARN] refresh_minigames_panel a échoué temporairement : {e}")
+        return False
 
     await send_minigames_panel(channel)
     return True

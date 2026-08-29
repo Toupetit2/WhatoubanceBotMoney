@@ -263,9 +263,12 @@ async def update_leaderboard(bot: discord.Client):
 
     try:
         message = await channel.fetch_message(leaderboard_message_ref["message_id"])
-        await message.edit(embed=build_summary_embed(channel.guild))
+        await message.edit(embed=build_summary_embed())
         return True
     except discord.NotFound:
+        return False
+    except (discord.DiscordServerError, discord.HTTPException) as e:
+        print(f"[WARN] update_leaderboard a échoué temporairement : {e}")
         return False
 
 

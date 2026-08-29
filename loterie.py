@@ -115,6 +115,9 @@ async def update_loterie_message(bot: discord.Client):
         return True
     except discord.NotFound:
         return False
+    except (discord.DiscordServerError, discord.HTTPException) as e:
+        print(f"[WARN] update_loterie_message a échoué temporairement : {e}")
+        return False
 
 
 # ---------- Tirage ----------
@@ -167,7 +170,7 @@ async def send_new_loterie_message(bot: discord.Client):
     if channel is None:
         return
 
-    msg = await channel.send(embed=build_loterie_embed())
+    msg = await channel.send(embed=build_loterie_embed(), view=LoterieView())
     loterie_message_ref["channel_id"] = msg.channel.id
     loterie_message_ref["message_id"] = msg.id
     save_loterie_ref()
@@ -177,9 +180,33 @@ async def send_new_loterie_message(bot: discord.Client):
     save_loterie(data)
 
 
+# ---------- Vue avec bouton ----------
+
+class LoterieView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)  # timeout=None + custom_id => bouton persistant
+
+    @discord.ui.button(
+        label="Mes tickets 🎟️",
+        style=discord.ButtonStyle.blurple,
+        custom_id="loterie_mes_tickets",
+    )
+    async def mes_tickets(self, interaction: discord.Interaction, button: discord.ui.Button):
+        data = load_loterie()
+        nb = data["tickets"].get(str(interaction.user.id), 0)
+        if nb == 0:
+            texte = "Tu n'as aucun ticket pour le moment. Rends-toi à la boutique pour en acheter !"
+        elif nb == 1:
+            texte = "Tu as **1 ticket** pour le tirage en cours."
+        else:
+            texte = f"Tu as **{nb} tickets** pour le tirage en cours."
+        await interaction.response.send_message(texte, ephemeral=True)
+
+
 # ---------- Commandes ----------
 
 def setup(bot):
+    bot.add_view(LoterieView())
 
     @tasks.loop(minutes=1)
     async def refresh_loterie_embed():
@@ -213,7 +240,7 @@ def setup(bot):
     @app_commands.default_permissions(administrator=True)
     @bot.tree.command(name="setup_loterie", description="Envoie le message de la loterie")
     async def setup_loterie(interaction: discord.Interaction):
-        msg = await interaction.channel.send(embed=build_loterie_embed())
+        msg = await interaction.channel.send(embed=build_loterie_embed(), view=LoterieView())
         loterie_message_ref["channel_id"] = msg.channel.id
         loterie_message_ref["message_id"] = msg.id
         save_loterie_ref()

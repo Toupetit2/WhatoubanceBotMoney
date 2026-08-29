@@ -97,7 +97,10 @@ async def update_boutique_message(bot: discord.Client):
         return True
     except discord.NotFound:
         return False
-
+    except (discord.DiscordServerError, discord.HTTPException) as e:
+        print(f"[WARN] update_boutique_message a échoué temporairement : {e}")
+        return False
+    
 @tasks.loop(hours=1)
 async def auto_update_boutique_message(bot: discord.Client):
     await update_boutique_message(bot)
