@@ -12,6 +12,7 @@ from tickets import create_ticket_channel
 
 LOTERIE_PATH = os.path.join(os.path.dirname(__file__), "loterie.json")
 LOTERIE_REF_PATH = os.path.join(os.path.dirname(__file__), "loterie_ref.json")
+LOTERIE_ARCHIVE_PATH = os.path.join(os.path.dirname(__file__), "loterie_dernier_tirage.json")
 
 PARIS_TZ = ZoneInfo("Europe/Paris")
 TIRAGE_WEEKDAY = 6   # 0 = lundi ... 6 = dimanche
@@ -50,7 +51,6 @@ def add_ticket(user_id: str):
     save_loterie(data)
 
 
-
 # ---------- Persistance du message ----------
 
 def load_loterie_ref():
@@ -66,6 +66,16 @@ def save_loterie_ref():
 
 
 loterie_message_ref.update(load_loterie_ref())
+
+
+# ---------- Archive du dernier tirage ----------
+# Permet de retrouver et corriger à la main l'ancien message une fois le
+# tirage effectué, même après que les tickets ont été remis à zéro pour le
+# tour suivant. Voir corriger_dernier_message.py.
+
+def save_dernier_tirage(archive: dict):
+    with open(LOTERIE_ARCHIVE_PATH, "w", encoding="utf-8") as f:
+        json.dump(archive, f, ensure_ascii=False, indent=2)
 
 
 # ---------- Embed ----------
@@ -106,6 +116,15 @@ def build_loterie_embed() -> discord.Embed:
 async def update_loterie_message(bot: discord.Client):
     if loterie_message_ref["message_id"] is None:
         return False
+
+    data = load_loterie()
+    if data.get("next_message_at"):
+        # Le tirage a eu lieu mais le nouveau message de loterie n'a pas
+        # encore été posté : on ne touche pas à l'ancien message pour ne
+        # pas écraser ses stats (participants/tickets) avec les données
+        # déjà remises à zéro pour le prochain tour.
+        return False
+
     channel = bot.get_channel(loterie_message_ref["channel_id"])
     if channel is None:
         return False
@@ -130,6 +149,7 @@ def pick_winner(data: dict) -> str | None:
         return None
     return random.choice(pool)
 
+
 async def effectuer_tirage(bot: discord.Client):
     data = load_loterie()
 
@@ -138,15 +158,21 @@ async def effectuer_tirage(bot: discord.Client):
 
     winner_id = pick_winner(data)
 
+    # Stats à archiver AVANT le reset, pour pouvoir corriger le vieux
+    # message à la main plus tard si besoin.
+    nb_participants = len(data["tickets"])
+    nb_tickets = sum(data["tickets"].values())
+
     channel = bot.get_channel(loterie_message_ref["channel_id"])
     guild = channel.guild if channel else (bot.guilds[0] if bot.guilds else None)
 
+    member = None
     if winner_id and guild:
         member = guild.get_member(int(winner_id)) or await guild.fetch_member(int(winner_id))
         if member:
             if channel:
                 await channel.send(f"{member.mention} a gagné la loterie et remporte {data['lot']} !")
-            
+
             await create_ticket_channel(
                 guild,
                 member,
@@ -156,6 +182,18 @@ async def effectuer_tirage(bot: discord.Client):
                     f"Lot : **{data['lot']}**"
                 ),
             )
+
+    # Archive du tirage (utilisée par corriger_dernier_message.py)
+    save_dernier_tirage({
+        "channel_id": loterie_message_ref["channel_id"],
+        "message_id": loterie_message_ref["message_id"],
+        "lot": data["lot"],
+        "gagnant_id": winner_id,
+        "gagnant_nom": member.name if member else None,
+        "nb_participants": nb_participants,
+        "nb_tickets": nb_tickets,
+        "date_tirage": datetime.now(PARIS_TZ).isoformat(),
+    })
 
     # Reset pour le prochain tirage
     data["tickets"] = {}
