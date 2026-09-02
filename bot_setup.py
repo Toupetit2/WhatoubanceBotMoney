@@ -6,6 +6,7 @@ from boutique import setup as setup_boutique
 from tickets import setup as setup_tickets
 from loterie import setup as setup_loterie
 from minigame_clear import setup as setup_minigameclear
+from commands.custom_titles_command import setup as setup_custom_titles
 
 async def bot_setup(bot):
     setup_give(bot)
@@ -16,3 +17,4 @@ async def bot_setup(bot):
     setup_boutique(bot)
     setup_loterie(bot)
     setup_minigameclear(bot)
+    setup_custom_titles(bot)

@@ -2,6 +2,8 @@ import discord
 import json
 import os
 
+import custom_titles as titles
+
 USERS_PATH = os.path.join(os.path.dirname(__file__), "users.json")
 SUCCESSES_PATH = os.path.join(os.path.dirname(__file__), "successes.json")
 
@@ -191,7 +193,8 @@ def get_equiped_title(member: discord.Member):
         user_id = str(member.id)
 
         if user_id in data and "equiped_title" in data[user_id]:
-            return data[user_id]["equiped_title"]
+            if data[user_id]["equiped_title"] is not "":
+                return data[user_id]["equiped_title"]
 
     return "Aucun titre équipé"
 
@@ -224,16 +227,19 @@ def get_unlocked_titles(member: discord.Member) -> list[str]:
 
     all_successes = list_successes()
 
-    titles = []
+    titles_list = []
     for category, unlocked_ids in unlocked_by_category.items():
         category_successes = all_successes.get(category, {})
         for success_id in unlocked_ids:
             success_info = category_successes.get(success_id, {})
             titre = success_info.get("title")
             if titre:
-                titles.append(titre)
+                titles_list.append(titre)
 
-    return titles
+    titles_list.extend(titles.get_given_titles(member))
+
+    return titles_list
+
 
 # ---------------- Statistiques ----------------
 
