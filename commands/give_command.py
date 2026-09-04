@@ -25,7 +25,8 @@ def setup(bot):
         guild = bot.get_guild(int(GUILD_ID))
         for member in guild.members:
             give.give_coins(amount, member)
-            if amount > 0:
-                await interaction.followup.send(f"✅ Tous les membres ont reçu {amount} coins", ephemeral=True)
-            else:
-                await interaction.followup.send(f"✅ Tous les membres ont perdu {-amount} coins", ephemeral=True)
+        
+        if amount > 0:
+            await interaction.followup.send(f"✅ Tous les membres ont reçu {amount} coins", ephemeral=True)
+        else:
+            await interaction.followup.send(f"✅ Tous les membres ont perdu {-amount} coins", ephemeral=True)

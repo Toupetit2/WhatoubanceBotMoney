@@ -192,6 +192,23 @@ def setup(bot):
 
         await interaction.followup.send(f"✅ Pari #{bet_id} fermé.", ephemeral=True)
 
+    @app_commands.guild_only()
+    @app_commands.default_permissions(administrator=True)
+    @bot.tree.command(name="pari_rouvrir", description="Rouvre un pari fermé")
+    @app_commands.describe(bet_id="L'identifiant du pari à rouvrir")
+    async def pari_rouvrir_command(interaction: discord.Interaction, bet_id: str):
+        await interaction.response.defer(ephemeral=True)
+
+        try:
+            bets_data.reopen_bet(bet_id)
+        except ValueError as e:
+            await interaction.followup.send(f"❌ {e}", ephemeral=True)
+            return
+
+        await bets_display.update_bet_embed(interaction.client, bet_id)
+
+        await interaction.followup.send(f"✅ Pari #{bet_id} réouvert.", ephemeral=True)
+
 
 
     @tasks.loop(seconds=15)

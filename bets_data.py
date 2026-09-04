@@ -211,3 +211,19 @@ def close_bet(bet_id: str):
 
     bet["statut"] = "ferme"
     save_bets(bets) 
+
+def reopen_bet(bet_id: str):
+    """Réouvre un pari fermé"""
+    bets = load_bets()
+    
+    if bet_id not in bets:
+        raise ValueError(f"Le pari #{bet_id} n'existe pas.")
+    
+    bet = bets[bet_id]
+    
+    if bet.get("statut") != "fermé":
+        raise ValueError(f"Seul un pari fermé peut être réouvert. Statut actuel: {bet.get('statut')}")
+    
+    # Réouvre le pari
+    bet["statut"] = "ouvert"
+    save_bets(bets)
