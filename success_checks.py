@@ -1,5 +1,5 @@
 import discord
-from give import get_statistic, set_statistic, increment_statistic ,unlock_success_and_notify, get_user_coins, give_coins, has_success
+from give import get_statistic, set_statistic, increment_statistic ,unlock_success_and_notify, get_user_coins, give_coins, has_success, unlock_success
 
 import os
 
@@ -70,14 +70,14 @@ async def check_loaded_dice_success(member: discord.Member, score: int, interact
 
 # ---------------- Catégorie "Paris" ----------------
 
-async def check_betting_success(member: discord.Member, single_bet_amount: int, interaction: discord.Interaction):
+async def check_betting_success(member: discord.Member, single_bet_amount: int):
     """À appeler juste après register_bet(), avec le montant misé sur CE pari précis."""
     net = get_statistic(member, "betting_net_whatoubiffs", 0)
     if net >= 5000:
-        await unlock_success_and_notify(member, "bet_profit_5000", "Paris", interaction)
-
+        await unlock_success(member, "bet_profit_5000", "Paris")
+        
     if single_bet_amount >= 1000:
-        await unlock_success_and_notify(member, "single_bet_1000", "Paris", interaction)
+        await unlock_success(member, "single_bet_1000", "Paris")
 
 
 # ---------------- Catégorie "Mini jeu" ----------------
