@@ -13,7 +13,7 @@ def setup(bot):
             await interaction.response.send_message(f"⚠️{member.display_name} possède déjà le succès `{name}` ({category})", ephemeral=True)
             return
 
-        await give.unlock_success(member, name, category)
+        give.unlock_success(member, name, category)
         await interaction.response.send_message(f"✅Succès `{name}` ({category}) débloqué pour {member.display_name}", ephemeral=True)
 
 
