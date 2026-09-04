@@ -20,7 +20,7 @@ def setup(bot):
     @app_commands.guild_only()
     @app_commands.default_permissions(administrator=True)
     @bot.tree.command(name="give_coins_everyone", description="Donne X coins à tous les membres du serveur")
-    async def give_coins_everyone_command(interaction: discord.Interaction, member: discord.Member, amount: int):
+    async def give_coins_everyone_command(interaction: discord.Interaction, amount: int):
         await interaction.response.defer(ephemeral=True)
         guild = bot.get_guild(int(GUILD_ID))
         for member in guild.members:
