@@ -124,21 +124,22 @@ class UserPickerView(discord.ui.View):
 
     @discord.ui.select(cls=discord.ui.UserSelect, placeholder="Choisis un membre")
     async def select_user(self, interaction: discord.Interaction, select: discord.ui.UserSelect):
+        await interaction.response.defer()
         target = select.values[0]
 
         if self.mode == "position":
             embed = build_position_embed(target, viewer=interaction.user)
-            await interaction.response.edit_message(content=None, embed=embed, view=None)
+            await interaction.edit_original_response(content=None, embed=embed, view=None)
         elif self.mode == "profil":
             embed = get_profile_embed(target)
             view = ProfileView(target)
-            await interaction.response.edit_message(content=None, embed=embed, view=view)
+            await interaction.edit_original_response(content=None, embed=embed, view=view)
         elif self.mode == "succes":
             successes_def = json.load(open(SUCCESSES_PATH, encoding="utf-8"))
             categories = list(successes_def.keys())
             view = SuccessesView(target, categories)
             embed = build_page_embed(target, categories[0], categories)
-            await interaction.response.edit_message(content=None, embed=embed, view=view)
+            await interaction.edit_original_response(content=None, embed=embed, view=view)
 
 # ---------- Views ----------
 class PaginatedLeaderboardView(discord.ui.View):
@@ -157,17 +158,19 @@ class PaginatedLeaderboardView(discord.ui.View):
 
     @discord.ui.button(label="◀", style=discord.ButtonStyle.secondary)
     async def previous_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
         self.page -= 1
         embed, self.page, _ = build_paginated_embed(self.kind, self.page, self.guild)
         self._update_button_states()
-        await interaction.response.edit_message(embed=embed, view=self)
+        await interaction.edit_original_response(embed=embed, view=self)
 
     @discord.ui.button(label="▶", style=discord.ButtonStyle.secondary)
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
         self.page += 1
         embed, self.page, _ = build_paginated_embed(self.kind, self.page, self.guild)
         self._update_button_states()
-        await interaction.response.edit_message(embed=embed, view=self)
+        await interaction.edit_original_response(embed=embed, view=self)
 
 
 class LeaderboardView(discord.ui.View):
@@ -177,27 +180,31 @@ class LeaderboardView(discord.ui.View):
     # Row 0
     @discord.ui.button(label="💰 Ladder WhatouBiffs ", style=discord.ButtonStyle.secondary, custom_id="ranking_wtbiffs", row=0)
     async def full_monnaie_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
         embed, page, _ = build_paginated_embed("monnaie", 0, interaction.guild)
         view = PaginatedLeaderboardView("monnaie", interaction.guild, page)
-        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
     @discord.ui.button(label="🏆 Ladder Succès", style=discord.ButtonStyle.secondary, custom_id="ranking_successes", row=0)
     async def full_success_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
         embed, page, _ = build_paginated_embed("success", 0, interaction.guild)
         view = PaginatedLeaderboardView("success", interaction.guild, page)
-        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
     # Row 1 — moi
     @discord.ui.button(label="📌 Mon Rang", style=discord.ButtonStyle.secondary, custom_id="see_position", row=1)
     async def my_position_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
         embed = build_position_embed(interaction.user, viewer=interaction.user)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        await interaction.followup.send(embed=embed, ephemeral=True)
 
     @discord.ui.button(label="👤 Mon Profil", style=discord.ButtonStyle.secondary, custom_id="see_profile", row=1)
     async def my_profile_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
         embed = get_profile_embed(interaction.user)
         view = ProfileView(interaction.user)
-        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
         await unlock_success_and_notify(interaction.user, "profile_viewed", "Global", interaction)
         await success_checks.check_coins_success(interaction)
         await success_checks.check_riot_linked_success(interaction.user, interaction)
@@ -207,24 +214,28 @@ class LeaderboardView(discord.ui.View):
 
     @discord.ui.button(label="🎖️ Mes Succès", style=discord.ButtonStyle.secondary, custom_id="see_successes", row=1)
     async def my_successes_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer(ephemeral=True)
         successes_def = json.load(open(SUCCESSES_PATH, encoding="utf-8"))
         categories = list(successes_def.keys()) + ["Boutique"]
         view = SuccessesView(interaction.user, categories)
         embed = build_page_embed(interaction.user, categories[0], categories)
-        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
     # Row 2 — quelqu'un d'autre
     @discord.ui.button(label="❓ Rang de ...", style=discord.ButtonStyle.secondary, custom_id="see_position_other", row=2)
     async def other_position_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(view=UserPickerView("position"), ephemeral=True)
+        await interaction.response.defer(ephemeral=True)
+        await interaction.followup.send(view=UserPickerView("position"), ephemeral=True)
 
     @discord.ui.button(label="❓ Profil de ... ", style=discord.ButtonStyle.secondary, custom_id="see_profile_other", row=2)
     async def other_profile_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(view=UserPickerView("profil"), ephemeral=True)
+        await interaction.response.defer(ephemeral=True)
+        await interaction.followup.send(view=UserPickerView("profil"), ephemeral=True)
 
     @discord.ui.button(label="❓ Succès de ...", style=discord.ButtonStyle.secondary, custom_id="see_successes_other", row=2)
     async def other_successes_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message(view=UserPickerView("succes"), ephemeral=True)
+        await interaction.response.defer(ephemeral=True)
+        await interaction.followup.send(view=UserPickerView("succes"), ephemeral=True)
 
 
 # ---------- Persistance du message principal ----------
@@ -282,16 +293,18 @@ def setup(bot):
     @app_commands.default_permissions(administrator=True)
     @bot.tree.command(name="setup_leaderboard", description="Envoie le leaderboard")
     async def setup_leaderboard_command(interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
         await send_leaderboard(interaction.channel)
-        await interaction.response.send_message("Leaderboard envoyé ✅", ephemeral=True)
+        await interaction.followup.send("Leaderboard envoyé ✅", ephemeral=True)
 
     @app_commands.guild_only()
     @app_commands.default_permissions(administrator=True)
     @bot.tree.command(name="update_leaderboard", description="update")
     async def update_leaderboard_command(interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=True)
         success = await update_leaderboard(bot)
         message = "Leaderboard mis à jour ✅" if success else "Aucun leaderboard trouvé."
-        await interaction.response.send_message(message, ephemeral=True)
+        await interaction.followup.send(message, ephemeral=True)
 
     @tasks.loop(minutes=1)
     async def auto_update_leaderboard():

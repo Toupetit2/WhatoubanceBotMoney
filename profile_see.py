@@ -176,13 +176,16 @@ class TitleSelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         if interaction.user.id != self.user.id:
-            await interaction.response.send_message("Ce menu n'est pas pour toi.", ephemeral=True)
+            await interaction.response.defer(ephemeral=True)
+            await interaction.followup.send("Ce menu n'est pas pour toi.", ephemeral=True)
             return
+
+        await interaction.response.defer()
 
         chosen_title = self.values[0]
         give.set_equiped_title(self.user, chosen_title)
 
-        await interaction.response.edit_message(
+        await interaction.edit_original_response(
             content=f"✅ Titre équipé : **{chosen_title}**",
             view=None
         )
@@ -209,27 +212,32 @@ class ProfileView(discord.ui.View):
 
     @discord.ui.button(label="◀ Précédent", style=discord.ButtonStyle.secondary)
     async def previous_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
         self.page -= 1
         self._update_buttons()
-        await interaction.response.edit_message(embed=get_profile_embed(self.user, self.page), view=self)
+        await interaction.edit_original_response(embed=get_profile_embed(self.user, self.page), view=self)
 
     @discord.ui.button(label="Suivant ▶", style=discord.ButtonStyle.secondary)
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.defer()
         self.page += 1
         self._update_buttons()
-        await interaction.response.edit_message(embed=get_profile_embed(self.user, self.page), view=self)
+        await interaction.edit_original_response(embed=get_profile_embed(self.user, self.page), view=self)
 
     @discord.ui.button(label="Changer de titre", style=discord.ButtonStyle.primary)
     async def set_title_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         if interaction.user.id != self.user.id:
-            await interaction.response.send_message("Ce n'est pas ton profil.", ephemeral=True)
+            await interaction.response.defer(ephemeral=True)
+            await interaction.followup.send("Ce n'est pas ton profil.", ephemeral=True)
             return
+
+        await interaction.response.defer(ephemeral=True)
 
         titles = give.get_unlocked_titles(self.user)
 
         if not titles:
-            await interaction.response.send_message("Tu n'as débloqué aucun titre pour l'instant.", ephemeral=True)
+            await interaction.followup.send("Tu n'as débloqué aucun titre pour l'instant.", ephemeral=True)
             return
 
         view = TitleSelectView(self.user, titles)
-        await interaction.response.send_message("Choisis ton titre :", view=view, ephemeral=True)
+        await interaction.followup.send("Choisis ton titre :", view=view, ephemeral=True)
