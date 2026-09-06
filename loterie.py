@@ -183,6 +183,16 @@ async def effectuer_tirage(bot: discord.Client):
                 ),
             )
 
+    if loterie_message_ref["message_id"] and channel:
+        try:
+            old_message = await channel.fetch_message(loterie_message_ref["message_id"])
+            # Éditer le message pour retirer les boutons (view vide)
+            await old_message.edit(embed=build_loterie_embed(), view=LoterieArchiveView())
+        except discord.NotFound:
+            pass  # Le message a peut-être été supprimé
+        except Exception as e:
+            print(f"[WARN] Impossible d'éditer le vieux message de loterie : {e}")
+
     # Archive du tirage (utilisée par corriger_dernier_message.py)
     save_dernier_tirage({
         "channel_id": loterie_message_ref["channel_id"],
@@ -240,11 +250,16 @@ class LoterieView(discord.ui.View):
             texte = f"Tu as **{nb} tickets** pour le tirage en cours."
         await interaction.response.send_message(texte, ephemeral=True)
 
+class LoterieArchiveView(discord.ui.View):
+    """Vue pour les anciens messages de loterie après le tirage (sans le bouton)."""    
+    def __init__(self):
+        super().__init__(timeout=None)
 
 # ---------- Commandes ----------
 
 def setup(bot):
     bot.add_view(LoterieView())
+    bot.add_view(LoterieArchiveView())
 
     @tasks.loop(minutes=1)
     async def refresh_loterie_embed():
