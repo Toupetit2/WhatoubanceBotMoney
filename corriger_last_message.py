@@ -11,7 +11,7 @@ from discord import Intents
 PARIS_TZ = ZoneInfo("Europe/Paris")
 
 DISCORD_TOKEN = os.getenv("TOKEN_DISCORD")
-GUILD_ID = int(os.getenv("GUILD_ID"))
+GUILD_ID = int(os.getenv("GUILD_ID", "1341057329734615080"))
 
 async def corriger_message(message_id: int, channel_id: int = None):
     """Supprime juste les boutons du message."""
