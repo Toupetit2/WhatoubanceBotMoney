@@ -10,9 +10,8 @@ from discord import Intents
 
 PARIS_TZ = ZoneInfo("Europe/Paris")
 
-# ⚠️ À configurer avec vos propres valeurs
-DISCORD_TOKEN = os.environ.get("TOKEN_DISCORD")  # ou mettre directement votre token
-GUILD_ID = int(os.environ.get("GUILD_ID", 0))   # ID du serveur Discord
+DISCORD_TOKEN = os.get("TOKEN_DISCORD", "")  # Token du bot Discord
+GUILD_ID = int(os.get("GUILD_ID", 0))   # ID du serveur Discord
 
 async def corriger_message(message_id: int, channel_id: int = None):
     """Supprime juste les boutons du message."""
