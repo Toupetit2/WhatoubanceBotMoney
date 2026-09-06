@@ -23,6 +23,7 @@ async def corriger_message(message_id: int, channel_id: int = None):
     # Si channel_id n'est pas fourni, utiliser celui de l'archive
     if channel_id is None:
         channel_id = archive.get("channel_id")
+
     
     if not channel_id:
         print("❌ ID du canal introuvable.")
@@ -32,9 +33,11 @@ async def corriger_message(message_id: int, channel_id: int = None):
     
     intents = Intents.default()
     client = discord.Client(intents=intents)
+
     
     async with client:
         await client.login(DISCORD_TOKEN)
+        await client.wait_until_ready()
         
         channel = client.get_channel(channel_id)
         if channel is None:
