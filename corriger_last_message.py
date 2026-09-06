@@ -10,7 +10,9 @@ from discord import Intents
 
 PARIS_TZ = ZoneInfo("Europe/Paris")
 
-os.load_dotenv()
+from dotenv import load_dotenv
+load_dotenv()
+
 
 DISCORD_TOKEN = os.getenv("TOKEN_DISCORD")
 GUILD_ID = int(os.getenv("GUILD_ID", "1341057329734615080"))
