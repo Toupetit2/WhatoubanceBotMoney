@@ -20,7 +20,7 @@ class DicesView(discord.ui.View):
         success_checks.register_day_played(interaction.user)
         await success_checks.check_played_days_success(interaction.user, interaction)
         give.increment_statistic(interaction.user, "luckydice_game_count")
-        if self.answered:
+        if self.answered or not can_play_today(interaction.user.id, "luckydice"):
             await interaction.response.send_message(
                 "Tu as déjà lancé les dés !", ephemeral=True
             )
