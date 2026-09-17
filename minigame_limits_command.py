@@ -1,4 +1,4 @@
-from minigame_limits import set_status, STATUS_DEFAULT, STATUS_UNLIMITED
+from minigame_limits import set_status, has_unlimited, STATUS_DEFAULT, STATUS_UNLIMITED
 import discord
 from discord import app_commands
 import os
