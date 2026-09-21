@@ -898,7 +898,6 @@ async def screenshot_url(
                             });
                         }
                     }
-                }
                 """
             )
 
