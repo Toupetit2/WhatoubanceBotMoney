@@ -512,6 +512,21 @@ async def screenshot_url(
                 timeout=30000,
             )
 
+            
+            # Cookies
+            for cookie_selector in [
+                "text=Accepter",
+                "text=Accept",
+            ]:
+                try:
+                    await page.click(
+                        cookie_selector,
+                        timeout=1500,
+                    )
+                    break
+                except Exception:
+                    pass
+
             # --------------------------------------------------------
             # 2. Attendre le rendu dynamique
             # --------------------------------------------------------
