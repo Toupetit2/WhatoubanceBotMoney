@@ -8,6 +8,7 @@ from loterie import setup as setup_loterie
 from minigame_clear import setup as setup_minigameclear
 from commands.custom_titles_command import setup as setup_custom_titles
 from commands.unlock_success_command import setup as setup_unlock_success
+from minigame_limits_command import setup as setup_minigame_limit
 
 async def bot_setup(bot):
     setup_give(bot)
@@ -20,3 +21,4 @@ async def bot_setup(bot):
     setup_minigameclear(bot)
     setup_custom_titles(bot)
     setup_unlock_success(bot)
+    setup_minigame_limit(bot)
