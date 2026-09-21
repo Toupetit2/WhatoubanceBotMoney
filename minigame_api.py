@@ -251,7 +251,7 @@ def get_random_gameid():
 CUSTOM_CSS = """
 /* Fond */
 .bg-bg2 {
-    #0F3058 !important;
+    background-color: #0F3058 !important;
 }
 
 /* Grilles */
@@ -949,4 +949,5 @@ async def shutdown_browser():
             pass
 
         _playwright = None
+
 
