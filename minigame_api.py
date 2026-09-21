@@ -84,7 +84,6 @@ def get_top_ladder(server, min_players=50):
     Ne renvoie jamais None :
     au pire, une liste vide si aucun tier n'a répondu correctement.
     """
-
     players = []
 
     base_url = (
@@ -97,12 +96,9 @@ def get_top_ladder(server, min_players=50):
     }
 
     for tier, division in TIERS:
-
         if division is None:
             url = f"{base_url}/{tier}"
         else:
-            # L'endpoint /entries/{tier}/{division} attend
-            # le tier en MAJUSCULES.
             url = (
                 f"{base_url}/entries/"
                 f"{tier.upper()}/{division}"
@@ -115,11 +111,8 @@ def get_top_ladder(server, min_players=50):
                 params={"queue": "RANKED_TFT"},
                 timeout=10,
             )
-
         except requests.RequestException as exc:
-            print(
-                f"Erreur réseau sur {url} : {exc}"
-            )
+            print(f"Erreur réseau sur {url} : {exc}")
             continue
 
         if response.status_code != 200:
@@ -131,11 +124,6 @@ def get_top_ladder(server, min_players=50):
 
         data = response.json()
 
-        # /challenger, /grandmaster, /master
-        # renvoient {"entries": [...]}
-        #
-        # /entries/{tier}/{division}
-        # renvoie directement une liste.
         if isinstance(data, list):
             entries = data
         else:
@@ -167,9 +155,7 @@ def get_random_gameid():
     puuid, platform = get_random_puuid()
 
     if puuid is None:
-        print(
-            "Impossible de récupérer un puuid, abandon."
-        )
+        print("Impossible de récupérer un puuid, abandon.")
         return None
 
     cluster = get_cluster(platform)
@@ -184,7 +170,7 @@ def get_random_gameid():
     }
 
     params = {
-        "count": 5,  # game count
+        "count": 5,
     }
 
     try:
@@ -195,9 +181,7 @@ def get_random_gameid():
             timeout=10,
         )
     except requests.RequestException as exc:
-        print(
-            f"Erreur réseau Riot API : {exc}"
-        )
+        print(f"Erreur réseau Riot API : {exc}")
         return None
 
     if response.status_code != 200:
@@ -210,23 +194,16 @@ def get_random_gameid():
     match_ids = response.json()
 
     if not match_ids:
-        print(
-            "Aucun match trouvé pour ce joueur."
-        )
+        print("Aucun match trouvé pour ce joueur.")
         return None
 
     while match_ids:
-
         match_id = random.choice(match_ids)
 
         url = (
             f"https://{cluster}.api.riotgames.com"
             f"/tft/match/v1/matches/{match_id}"
         )
-
-        headers = {
-            "X-Riot-Token": RIOT_API_KEY
-        }
 
         try:
             response = requests.get(
@@ -235,9 +212,7 @@ def get_random_gameid():
                 timeout=10,
             )
         except requests.RequestException as exc:
-            print(
-                f"Erreur réseau Riot API : {exc}"
-            )
+            print(f"Erreur réseau Riot API : {exc}")
             match_ids.remove(match_id)
             continue
 
@@ -265,14 +240,14 @@ def get_random_gameid():
         match_ids.remove(match_id)
 
     # Plus aucun match ranked solo trouvé parmi les candidats :
-    # on retente avec un autre joueur plutôt que de boucler
-    # indéfiniment sur le même.
+    # on retente avec un autre joueur.
     return get_random_gameid()
 
 
 # ============================================================
 # PLAYWRIGHT / SCREENSHOTS
 # ============================================================
+
 CUSTOM_CSS = """
 /* Fond */
 .bg-bg2 {
@@ -300,34 +275,72 @@ body {
     white-space: nowrap;
 }
 
+/*
+ * PUBLICITES
+ *
+ * On masque les iframes publicitaires/tracking connus.
+ * Les domaines ci-dessous correspondent notamment aux
+ * iframes observées dans les logs :
+ *
+ * - adsrvr.org
+ * - btloader.com
+ * - p7cloud.net
+ */
 
-/* =========================
-   PUBLICITÉS
-   ========================= */
-
-/* Iframes publicitaires */
-iframe[src*="adsrvr.org"] {
+/* Iframes publicitaires / tracking */
+iframe[src*="adsrvr.org"],
+iframe[src*="btloader.com"],
+iframe[src*="p7cloud.net"],
+iframe[src*="doubleclick"],
+iframe[src*="googlesyndication"],
+iframe[src*="googleadservices"],
+iframe[src*="adservice"] {
     display: none !important;
+    visibility: hidden !important;
 }
 
-/* Images provenant du serveur publicitaire */
-img[src*="adsrvr.org"] {
+/* Images publicitaires */
+img[src*="adsrvr.org"],
+img[src*="doubleclick"],
+img[src*="googlesyndication"],
+img[src*="googleadservices"],
+img[src*="adservice"] {
     display: none !important;
+    visibility: hidden !important;
 }
 
-/* Conteneurs dont le contenu contient une ressource adsrvr.org */
+/* Conteneurs directs d'éléments publicitaires */
 div:has(iframe[src*="adsrvr.org"]),
+div:has(iframe[src*="btloader.com"]),
+div:has(iframe[src*="p7cloud.net"]),
 div:has(img[src*="adsrvr.org"]) {
     display: none !important;
+    visibility: hidden !important;
 }
 """
+
+
+# Domaines qui ne doivent pas être chargés par le navigateur.
+#
+# Important : on ne bloque PAS tous les iframes.
+# On bloque uniquement les domaines publicitaires/tracking
+# identifiés afin de ne pas casser le rendu de tactics.tools.
+AD_BLOCKED_HOSTS = (
+    "adsrvr.org",
+    "btloader.com",
+    "p7cloud.net",
+    "doubleclick.net",
+    "googlesyndication.com",
+    "googleadservices.com",
+    "google-analytics.com",
+    "googletagmanager.com",
+)
 
 
 screenshot_semaphore = asyncio.Semaphore(1)
 
 _playwright = None
 _browser = None
-
 
 MAX_ITEMS_PER_ROW = 15
 
@@ -336,12 +349,24 @@ GRID_SELECTOR = (
 )
 
 
+def is_blocked_ad_url(url: str) -> bool:
+    """
+    Retourne True si l'URL appartient à un domaine publicitaire/tracking
+    que nous voulons bloquer.
+    """
+    url_lower = url.lower()
+
+    return any(
+        host in url_lower
+        for host in AD_BLOCKED_HOSTS
+    )
+
+
 async def get_browser():
     """
     Réutilise une seule instance de navigateur
     au lieu d'en relancer une à chaque capture.
     """
-
     global _playwright, _browser
 
     if (
@@ -360,6 +385,10 @@ async def get_browser():
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
                 "--disable-gpu",
+
+                # Réduit certaines surfaces publicitaires inutiles.
+                "--disable-background-networking",
+                "--disable-component-update",
             ],
         )
 
@@ -382,7 +411,6 @@ async def wait_for_grids(
     plutôt que page.wait_for_selector(), car le rendu
     de tactics.tools est dynamique.
     """
-
     loop = asyncio.get_running_loop()
 
     deadline = (
@@ -391,7 +419,6 @@ async def wait_for_grids(
     )
 
     while loop.time() < deadline:
-
         count = await page.evaluate(
             """
             selector => {
@@ -414,12 +441,7 @@ async def wait_for_grids(
 async def has_too_many_items(page) -> bool:
     """
     True si une grille contient plus de 15 enfants.
-
-    Le CSS force 15 colonnes.
-    Au-delà de 15 éléments, le contenu passerait
-    sur une deuxième ligne.
     """
-
     max_children = await page.evaluate(
         """
         selector => {
@@ -443,6 +465,178 @@ async def has_too_many_items(page) -> bool:
     return max_children > MAX_ITEMS_PER_ROW
 
 
+async def remove_ad_elements(page):
+    """
+    Supprime les éléments publicitaires/tracking déjà présents
+    dans le DOM.
+
+    Le CSS empêche leur affichage, mais cette étape retire aussi
+    leurs conteneurs afin d'éviter les barres noires laissées
+    par certains formats publicitaires.
+    """
+    try:
+        removed = await page.evaluate(
+            """
+            () => {
+                const selectors = [
+                    'iframe[src*="adsrvr.org"]',
+                    'iframe[src*="btloader.com"]',
+                    'iframe[src*="p7cloud.net"]',
+                    'iframe[src*="doubleclick"]',
+                    'iframe[src*="googlesyndication"]',
+                    'iframe[src*="googleadservices"]',
+                    'iframe[src*="adservice"]',
+                    'img[src*="adsrvr.org"]',
+                    'img[src*="doubleclick"]',
+                    'img[src*="googlesyndication"]',
+                    'img[src*="googleadservices"]',
+                    'img[src*="adservice"]'
+                ];
+
+                let count = 0;
+
+                for (const selector of selectors) {
+                    for (const element of document.querySelectorAll(selector)) {
+                        const parent = element.parentElement;
+
+                        // Si le parent est manifestement un conteneur
+                        // publicitaire vide après suppression de l'élément,
+                        // on retire le parent également.
+                        if (
+                            parent &&
+                            (
+                                parent.tagName === 'DIV' ||
+                                parent.tagName === 'ASIDE'
+                            )
+                        ) {
+                            parent.remove();
+                        } else {
+                            element.remove();
+                        }
+
+                        count++;
+                    }
+                }
+
+                return count;
+            }
+            """
+        )
+
+        if removed:
+            print(f"📢 Éléments publicitaires supprimés : {removed}")
+
+    except Exception as exc:
+        print(
+            f"[ads] Nettoyage DOM ignoré : {type(exc).__name__}: {exc}"
+        )
+
+
+async def install_ad_cleanup(page):
+    """
+    Installe un MutationObserver pour supprimer les publicités
+    qui seraient injectées après le chargement initial.
+    """
+    try:
+        await page.evaluate(
+            """
+            () => {
+                if (window.__tftAdCleanupInstalled) {
+                    return;
+                }
+
+                window.__tftAdCleanupInstalled = true;
+
+                const isAdElement = (element) => {
+                    if (!element || !element.matches) {
+                        return false;
+                    }
+
+                    const selectors = [
+                        'iframe[src*="adsrvr.org"]',
+                        'iframe[src*="btloader.com"]',
+                        'iframe[src*="p7cloud.net"]',
+                        'iframe[src*="doubleclick"]',
+                        'iframe[src*="googlesyndication"]',
+                        'iframe[src*="googleadservices"]',
+                        'iframe[src*="adservice"]',
+                        'img[src*="adsrvr.org"]',
+                        'img[src*="doubleclick"]',
+                        'img[src*="googlesyndication"]',
+                        'img[src*="googleadservices"]',
+                        'img[src*="adservice"]'
+                    ];
+
+                    return selectors.some(
+                        selector => element.matches(selector)
+                    );
+                };
+
+                const removeElement = (element) => {
+                    if (!element || !element.parentElement) {
+                        return;
+                    }
+
+                    const parent = element.parentElement;
+
+                    if (
+                        parent.matches('div, aside') &&
+                        (
+                            parent.children.length <= 1 ||
+                            parent.getAttribute('data-ad') !== null
+                        )
+                    ) {
+                        parent.remove();
+                    } else {
+                        element.remove();
+                    }
+                };
+
+                const observer = new MutationObserver(
+                    mutations => {
+                        for (const mutation of mutations) {
+                            for (const node of mutation.addedNodes) {
+                                if (
+                                    node.nodeType !== Node.ELEMENT_NODE
+                                ) {
+                                    continue;
+                                }
+
+                                if (isAdElement(node)) {
+                                    removeElement(node);
+                                    continue;
+                                }
+
+                                for (const child of node.querySelectorAll(
+                                    'iframe, img'
+                                )) {
+                                    if (isAdElement(child)) {
+                                        removeElement(child);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+
+                observer.observe(
+                    document.documentElement,
+                    {
+                        childList: true,
+                        subtree: true
+                    }
+                );
+            }
+            """
+        )
+
+    except Exception as exc:
+        print(
+            f"[ads] MutationObserver non installé : "
+            f"{type(exc).__name__}: {exc}"
+        )
+
+
 async def screenshot_url(
     url: str,
     output_path: str = "screenshot.png",
@@ -457,9 +651,7 @@ async def screenshot_url(
 
     Retourne True si le screenshot a été créé.
     """
-
     async with screenshot_semaphore:
-
         browser = await get_browser()
 
         context = await browser.new_context(
@@ -477,8 +669,25 @@ async def screenshot_url(
             timezone_id="Europe/Paris",
         )
 
+        # --------------------------------------------------------
+        # Bloquer les pubs AVANT leur chargement.
+        # --------------------------------------------------------
+        async def handle_route(route):
+            request_url = route.request.url
+
+            if is_blocked_ad_url(request_url):
+                print(f"🚫 Pub/tracking bloqué : {request_url[:200]}")
+                await route.abort()
+                return
+
+            await route.continue_()
+
+        await context.route("**/*", handle_route)
+
+        # --------------------------------------------------------
         # Réduit les différences de comportement
-        # entre le serveur et le navigateur classique.
+        # entre le serveur et un navigateur classique.
+        # --------------------------------------------------------
         await context.add_init_script(
             """
             Object.defineProperty(
@@ -519,22 +728,24 @@ async def screenshot_url(
         page = await context.new_page()
 
         try:
-
-            # --------------------------------------------------------
+            # ----------------------------------------------------
             # 1. Navigation
-            # --------------------------------------------------------
-
+            # ----------------------------------------------------
             await page.goto(
                 url,
                 wait_until="domcontentloaded",
                 timeout=30000,
             )
 
-                        # COOKIES
-
+            # ----------------------------------------------------
+            # 2. Cookies
+            # ----------------------------------------------------
+            #
+            # On garde la gestion des cookies, mais elle n'est
+            # plus bloquante pour la suite.
+            # ----------------------------------------------------
             cookie_clicked = False
 
-            # 1. Cherche dans la page principale
             for selector in [
                 "button:has-text('Accepter')",
                 "[role='button']:has-text('Accepter')",
@@ -546,23 +757,23 @@ async def screenshot_url(
                 try:
                     locator = page.locator(selector).first
 
-                    if await locator.is_visible(timeout=1000):
+                    if await locator.is_visible(timeout=700):
+                        print(
+                            f"🍪 Bouton trouvé : {selector}"
+                        )
                         await locator.click(timeout=3000)
                         cookie_clicked = True
+                        print("🍪 Cookies acceptés")
                         break
 
                 except Exception:
                     pass
 
-
-            # 2. Si rien trouvé, cherche dans les iframes
+            # Si le bandeau est dans une iframe.
             if not cookie_clicked:
-
                 for frame in page.frames:
                     if frame == page.main_frame:
                         continue
-
-                    print(f"iframe : {frame.url}")
 
                     for selector in [
                         "button:has-text('Accepter')",
@@ -575,13 +786,10 @@ async def screenshot_url(
                         try:
                             locator = frame.locator(selector).first
 
-                            if await locator.is_visible(timeout=1000):
-                                print(
-                                )
-
+                            if await locator.is_visible(timeout=500):
                                 await locator.click(timeout=3000)
                                 cookie_clicked = True
-
+                                print("🍪 Cookies acceptés dans iframe")
                                 break
 
                         except Exception:
@@ -590,19 +798,19 @@ async def screenshot_url(
                     if cookie_clicked:
                         break
 
+            # ----------------------------------------------------
+            # 3. Installer le nettoyage publicitaire immédiatement
+            # ----------------------------------------------------
+            await install_ad_cleanup(page)
+            await remove_ad_elements(page)
 
-            if not cookie_clicked:
-                pass
-
-            # --------------------------------------------------------
-            # 2. Attendre le rendu dynamique
-            # --------------------------------------------------------
-
+            # ----------------------------------------------------
+            # 4. Attendre le rendu dynamique
+            # ----------------------------------------------------
             grid_count = await wait_for_grids(
                 page,
                 timeout_ms=15000,
             )
-
 
             if grid_count == 0:
                 print(
@@ -610,37 +818,27 @@ async def screenshot_url(
                 )
                 return False
 
-            # --------------------------------------------------------
-            # 3. Accepter les cookies si présents
-            # --------------------------------------------------------
+            # Les pubs peuvent être injectées pendant le rendu.
+            await remove_ad_elements(page)
 
-            try:
-                await page.click(
-                    "text=Accepter",
-                    timeout=3000,
-                )
-            except Exception:
-                pass
-
-            # --------------------------------------------------------
-            # 4. Ajouter notre CSS
-            # --------------------------------------------------------
-
+            # ----------------------------------------------------
+            # 5. Ajouter notre CSS
+            # ----------------------------------------------------
             await page.add_style_tag(
                 content=CUSTOM_CSS
             )
 
-            # --------------------------------------------------------
-            # 5. Attendre très brièvement que le layout
-            #    se stabilise après le CSS
-            # --------------------------------------------------------
+            # ----------------------------------------------------
+            # 6. Laisser le layout se stabiliser
+            # ----------------------------------------------------
+            await page.wait_for_timeout(500)
 
-            await page.wait_for_timeout(300)
+            # Dernier nettoyage après injection des pubs.
+            await remove_ad_elements(page)
 
-            # --------------------------------------------------------
-            # 6. Vérifier la taille des grids
-            # --------------------------------------------------------
-
+            # ----------------------------------------------------
+            # 7. Vérifier la taille des grids
+            # ----------------------------------------------------
             if await has_too_many_items(page):
                 print(
                     "[screenshot] Trop d'éléments dans "
@@ -648,13 +846,9 @@ async def screenshot_url(
                 )
                 return False
 
-            # --------------------------------------------------------
-            # 7. Fonts
-            #
-            # Ne pas laisser Playwright bloquer indéfiniment
-            # sur document.fonts.ready.
-            # --------------------------------------------------------
-
+            # ----------------------------------------------------
+            # 8. Fonts
+            # ----------------------------------------------------
             try:
                 await page.evaluate(
                     """
@@ -666,10 +860,7 @@ async def screenshot_url(
                         await Promise.race([
                             document.fonts.ready,
                             new Promise(resolve => {
-                                setTimeout(
-                                    resolve,
-                                    3000
-                                );
+                                setTimeout(resolve, 3000);
                             })
                         ]);
                     }
@@ -678,20 +869,57 @@ async def screenshot_url(
             except Exception:
                 pass
 
-            # --------------------------------------------------------
-            # 8. Revenir en haut
-            # --------------------------------------------------------
+            # ----------------------------------------------------
+            # 9. Nettoyage final AVANT screenshot
+            # ----------------------------------------------------
+            await remove_ad_elements(page)
 
             await page.evaluate(
-                "window.scrollTo(0, 0)"
+                """
+                () => {
+                    window.scrollTo(0, 0);
+
+                    // Retire les iframes publicitaires/tracking
+                    // qui auraient été injectées très tardivement.
+                    const selectors = [
+                        'iframe[src*="adsrvr.org"]',
+                        'iframe[src*="btloader.com"]',
+                        'iframe[src*="p7cloud.net"]',
+                        'iframe[src*="doubleclick"]',
+                        'iframe[src*="googlesyndication"]',
+                        'iframe[src*="googleadservices"]',
+                        'iframe[src*="adservice"]'
+                    ];
+
+                    for (const selector of selectors) {
+                        document
+                            .querySelectorAll(selector)
+                            .forEach(element => {
+                                const parent = element.parentElement;
+
+                                if (
+                                    parent &&
+                                    (
+                                        parent.tagName === 'DIV' ||
+                                        parent.tagName === 'ASIDE'
+                                    ) &&
+                                    parent.children.length <= 1
+                                ) {
+                                    parent.remove();
+                                } else {
+                                    element.remove();
+                                }
+                            });
+                    }
+                }
+                """
             )
 
             await page.wait_for_timeout(200)
 
-            # --------------------------------------------------------
-            # 9. Screenshot
-            # --------------------------------------------------------
-
+            # ----------------------------------------------------
+            # 10. Screenshot
+            # ----------------------------------------------------
             await page.screenshot(
                 path=output_path,
                 full_page=True,
@@ -702,12 +930,10 @@ async def screenshot_url(
             return True
 
         except Exception as exc:
-
             print(
                 f"[screenshot] Erreur pour {url} : "
                 f"{type(exc).__name__}: {exc}"
             )
-
             return False
 
         finally:
@@ -718,10 +944,8 @@ async def screenshot_url(
 async def shutdown_browser():
     """
     Ferme proprement le navigateur et Playwright.
-
     À appeler à l'arrêt du bot.
     """
-
     global _browser, _playwright
 
     if _browser is not None:
