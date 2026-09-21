@@ -512,14 +512,6 @@ async def screenshot_url(
                 timeout=30000,
             )
 
-            # =========================
-            # COOKIES
-            # =========================
-            try:
-                await page.click("text=Accepter", timeout=3000)
-            except:
-                pass
-
             # --------------------------------------------------------
             # 2. Attendre le rendu dynamique
             # --------------------------------------------------------
@@ -541,7 +533,7 @@ async def screenshot_url(
 
             try:
                 await page.click(
-                    "text=Accept",
+                    "text=Accepter",
                     timeout=3000,
                 )
             except Exception:
