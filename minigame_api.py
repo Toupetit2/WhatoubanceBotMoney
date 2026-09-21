@@ -515,32 +515,41 @@ async def screenshot_url(
             # =========================
             # COOKIES
             # =========================
-            cookie_clicked = False
+            print("🍪 Recherche du bandeau cookies...")
 
-            selectors = [
-                "button:has-text('Accepter')",
-                "[role='button']:has-text('Accepter')",
-                "button:has-text('Accept')",
-                "[role='button']:has-text('Accept')",
-            ]
+            try:
+                # Cherche tous les éléments contenant "Accepter" ou "Accept"
+                cookie_elements = await page.locator(
+                    "text=/Accepter|Accept/i"
+                ).all()
 
-            for selector in selectors:
-                try:
-                    locator = page.locator(selector).first
+                print(f"🍪 Éléments trouvés : {len(cookie_elements)}")
 
-                    if await locator.is_visible(timeout=1000):
-                        await locator.click(timeout=3000)
-                        print(f"🍪 Cookies acceptés avec : {selector}", flush=True)
-                        cookie_clicked = True
-                        break
+                for i, element in enumerate(cookie_elements):
+                    try:
+                        visible = await element.is_visible()
+                        text = await element.inner_text()
 
-                except Exception:
-                    pass
+                        print(
+                            f"🍪 [{i}] visible={visible} "
+                            f"text={text!r}"
+                        )
 
-            if not cookie_clicked:
-                print("🍪 Bouton cookies non trouvé", flush=True)
+                        if visible:
+                            await element.click(
+                                timeout=3000,
+                                force=True,
+                            )
 
-            await page.wait_for_timeout(500)
+                            print("🍪 Bouton cookies cliqué")
+                            await page.wait_for_timeout(1000)
+                            break
+
+                    except Exception as e:
+                        print(f"🍪 Erreur élément {i}: {e}")
+
+            except Exception as e:
+                print(f"🍪 Erreur recherche cookies : {e}")
 
             # --------------------------------------------------------
             # 2. Attendre le rendu dynamique
