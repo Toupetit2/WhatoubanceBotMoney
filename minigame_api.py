@@ -205,8 +205,10 @@ AD_ELEMENT_SELECTORS_JS = """[
 COOKIE_SELECTORS = [
     "button:has-text('Accepter')",
     "[role='button']:has-text('Accepter')",
+    "text=Accepter",
     "button:has-text('Accept')",
     "[role='button']:has-text('Accept')",
+    "text=Accept",
 ]
 
 GRID_SELECTOR = "[class*='gap-y-5'][class*='grid']"
@@ -356,7 +358,9 @@ async def install_ad_cleanup(page):
 
 async def accept_cookies(page, timeout_ms=8000) -> bool:
     """Tente d'accepter les cookies, avec polling sur plusieurs secondes
-    car le bandeau peut apparaître après l'hydratation React."""
+    car le bandeau peut apparaître après l'hydratation React. Cherche
+    d'abord dans la page principale, puis dans les iframes (certains CMP
+    affichent leur bandeau dans une iframe tierce)."""
     loop = asyncio.get_running_loop()
     deadline = loop.time() + timeout_ms / 1000
 
@@ -370,6 +374,20 @@ async def accept_cookies(page, timeout_ms=8000) -> bool:
                     return True
             except Exception:
                 pass
+
+        for frame in page.frames:
+            if frame == page.main_frame:
+                continue
+            for selector in COOKIE_SELECTORS:
+                try:
+                    locator = frame.locator(selector).first
+                    if await locator.is_visible(timeout=300):
+                        await locator.click(timeout=2000)
+                        await page.wait_for_timeout(300)
+                        return True
+                except Exception:
+                    pass
+
         await asyncio.sleep(0.3)
 
     return False
