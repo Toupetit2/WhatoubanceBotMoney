@@ -509,7 +509,7 @@ async def remove_ad_elements(page):
                                 parent.tagName === 'ASIDE'
                             )
                         ) {
-                            parent.remove();
+                            element.remove();
                         } else {
                             element.remove();
                         }
@@ -586,7 +586,7 @@ async def install_ad_cleanup(page):
                             parent.getAttribute('data-ad') !== null
                         )
                     ) {
-                        parent.remove();
+                        element.remove();
                     } else {
                         element.remove();
                     }
@@ -905,7 +905,7 @@ async def screenshot_url(
                                     ) &&
                                     parent.children.length <= 1
                                 ) {
-                                    parent.remove();
+                                    element.remove();
                                 } else {
                                     element.remove();
                                 }
