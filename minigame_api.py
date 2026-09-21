@@ -512,6 +512,14 @@ async def screenshot_url(
                 timeout=30000,
             )
 
+            try:
+                await page.click(
+                    "text=Accepter",
+                    timeout=3000,
+                )
+            except Exception:
+                pass
+
             # --------------------------------------------------------
             # 2. Attendre le rendu dynamique
             # --------------------------------------------------------
@@ -520,6 +528,7 @@ async def screenshot_url(
                 page,
                 timeout_ms=15000,
             )
+
 
             if grid_count == 0:
                 print(
