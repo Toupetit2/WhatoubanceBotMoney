@@ -464,18 +464,17 @@ async def has_too_many_items(page) -> bool:
 
     return max_children > MAX_ITEMS_PER_ROW
 
-
 async def remove_ad_elements(page):
     """
-    Supprime les éléments publicitaires/tracking déjà présents
-    dans le DOM.
+    Masque les éléments publicitaires/tracking déjà présents dans le DOM.
 
-    Le CSS empêche leur affichage, mais cette étape retire aussi
-    leurs conteneurs afin d'éviter les barres noires laissées
-    par certains formats publicitaires.
+    On masque uniquement l'élément publicitaire lui-même (display: none),
+    sans jamais toucher à son parent : le parent peut porter le fond
+    visuel du bloc de layout englobant, et le supprimer laisse apparaître
+    le fond noir de la page derrière.
     """
     try:
-        removed = await page.evaluate(
+        hidden = await page.evaluate(
             """
             () => {
                 const selectors = [
@@ -497,23 +496,8 @@ async def remove_ad_elements(page):
 
                 for (const selector of selectors) {
                     for (const element of document.querySelectorAll(selector)) {
-                        const parent = element.parentElement;
-
-                        // Si le parent est manifestement un conteneur
-                        // publicitaire vide après suppression de l'élément,
-                        // on retire le parent également.
-                        if (
-                            parent &&
-                            (
-                                parent.tagName === 'DIV' ||
-                                parent.tagName === 'ASIDE'
-                            )
-                        ) {
-                            parent.remove();
-                        } else {
-                            element.remove();
-                        }
-
+                        // On masque uniquement l'élément, jamais le parent.
+                        element.style.setProperty('display', 'none', 'important');
                         count++;
                     }
                 }
@@ -523,8 +507,8 @@ async def remove_ad_elements(page):
             """
         )
 
-        if removed:
-            print(f"📢 Éléments publicitaires supprimés : {removed}")
+        if hidden:
+            print(f"📢 Éléments publicitaires masqués : {hidden}")
 
     except Exception as exc:
         print(
@@ -534,8 +518,11 @@ async def remove_ad_elements(page):
 
 async def install_ad_cleanup(page):
     """
-    Installe un MutationObserver pour supprimer les publicités
-    qui seraient injectées après le chargement initial.
+    Installe un MutationObserver pour masquer les publicités qui seraient
+    injectées après le chargement initial.
+
+    Comme ci-dessus : on masque uniquement l'élément publicitaire,
+    jamais son parent, pour ne pas perdre le fond visuel du layout.
     """
     try:
         await page.evaluate(
@@ -572,24 +559,10 @@ async def install_ad_cleanup(page):
                     );
                 };
 
-                const removeElement = (element) => {
-                    if (!element || !element.parentElement) {
-                        return;
-                    }
-
-                    const parent = element.parentElement;
-
-                    if (
-                        parent.matches('div, aside') &&
-                        (
-                            parent.children.length <= 1 ||
-                            parent.getAttribute('data-ad') !== null
-                        )
-                    ) {
-                        parent.remove();
-                    } else {
-                        element.remove();
-                    }
+                const hideElement = (element) => {
+                    // On masque seulement l'élément, jamais le parent :
+                    // le parent peut porter le fond visuel du bloc englobant.
+                    element.style.setProperty('display', 'none', 'important');
                 };
 
                 const observer = new MutationObserver(
@@ -603,7 +576,7 @@ async def install_ad_cleanup(page):
                                 }
 
                                 if (isAdElement(node)) {
-                                    removeElement(node);
+                                    hideElement(node);
                                     continue;
                                 }
 
@@ -611,7 +584,7 @@ async def install_ad_cleanup(page):
                                     'iframe, img'
                                 )) {
                                     if (isAdElement(child)) {
-                                        removeElement(child);
+                                        hideElement(child);
                                     }
                                 }
                             }
@@ -921,21 +894,9 @@ async def screenshot_url(
                         document
                             .querySelectorAll(selector)
                             .forEach(element => {
-                                const parent = element.parentElement;
-
-                                if (
-                                    parent &&
-                                    (
-                                        parent.tagName === 'DIV' ||
-                                        parent.tagName === 'ASIDE'
-                                    ) &&
-                                    parent.children.length <= 1
-                                ) {
-                                    parent.remove();
-                                } else {
-                                    element.remove();
-                                }
+                                element.style.setProperty('display', 'none', 'important');
                             });
+                        }
                     }
                 }
                 """
