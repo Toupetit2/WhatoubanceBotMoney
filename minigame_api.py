@@ -908,7 +908,6 @@ async def screenshot_url(
             # ----------------------------------------------------
             await page.screenshot(
                 path=output_path,
-                full_page=True,
                 animations="disabled",
                 timeout=60000,
             )
