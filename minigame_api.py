@@ -509,7 +509,7 @@ async def remove_ad_elements(page):
                                 parent.tagName === 'ASIDE'
                             )
                         ) {
-                            element.remove();
+                            parent.remove();
                         } else {
                             element.remove();
                         }
@@ -586,7 +586,7 @@ async def install_ad_cleanup(page):
                             parent.getAttribute('data-ad') !== null
                         )
                     ) {
-                        element.remove();
+                        parent.remove();
                     } else {
                         element.remove();
                     }
@@ -636,6 +636,31 @@ async def install_ad_cleanup(page):
             f"{type(exc).__name__}: {exc}"
         )
 
+async def accept_cookies(page, timeout_ms=8000):
+    """Tente d'accepter les cookies, avec polling sur plusieurs secondes
+    car le bandeau peut apparaître après l'hydratation React."""
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + timeout_ms / 1000
+    selectors = [
+        "button:has-text('Accepter')",
+        "[role='button']:has-text('Accepter')",
+        "button:has-text('Accept')",
+        "[role='button']:has-text('Accept')",
+    ]
+
+    while loop.time() < deadline:
+        for selector in selectors:
+            try:
+                locator = page.locator(selector).first
+                if await locator.is_visible(timeout=300):
+                    await locator.click(timeout=2000)
+                    print(f"🍪 Cookies acceptés via {selector}")
+                    await page.wait_for_timeout(300)  # laisse l'overlay disparaître
+                    return True
+            except Exception:
+                pass
+        await asyncio.sleep(0.3)
+    return False
 
 async def screenshot_url(
     url: str,
@@ -818,6 +843,7 @@ async def screenshot_url(
                 )
                 return False
 
+            await accept_cookies(page, timeout_ms=5000)
             # Les pubs peuvent être injectées pendant le rendu.
             await remove_ad_elements(page)
 
@@ -905,7 +931,7 @@ async def screenshot_url(
                                     ) &&
                                     parent.children.length <= 1
                                 ) {
-                                    element.remove();
+                                    parent.remove();
                                 } else {
                                     element.remove();
                                 }
