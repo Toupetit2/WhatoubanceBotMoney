@@ -273,34 +273,52 @@ def get_random_gameid():
 # ============================================================
 # PLAYWRIGHT / SCREENSHOTS
 # ============================================================
-
 CUSTOM_CSS = """
+/* Fond */
 .bg-bg2 {
-    background-color: #0F3058 !important;
+    background: #111;
 }
 
+/* Grilles */
 [class*='gap-y-5'][class*='grid'] {
-    grid-template-columns: repeat(
-        15,
-        minmax(0, 1fr)
-    ) !important;
+    grid-template-columns: repeat(15, minmax(0, 1fr)) !important;
 }
 
+/* Désactiver animations */
 * {
     animation: none !important;
     transition: none !important;
 }
 
-html {
-    scrollbar-width: none;
+/* Masquer scrollbar */
+::-webkit-scrollbar {
+    display: none !important;
 }
 
-html::-webkit-scrollbar {
-    display: none;
+/* Empêcher les retours à la ligne */
+body {
+    white-space: nowrap;
 }
 
-.pt-\\[1px\\].text-white2.text-xs.font-medium {
-    white-space: nowrap !important;
+
+/* =========================
+   PUBLICITÉS
+   ========================= */
+
+/* Iframes publicitaires */
+iframe[src*="adsrvr.org"] {
+    display: none !important;
+}
+
+/* Images provenant du serveur publicitaire */
+img[src*="adsrvr.org"] {
+    display: none !important;
+}
+
+/* Conteneurs dont le contenu contient une ressource adsrvr.org */
+div:has(iframe[src*="adsrvr.org"]),
+div:has(img[src*="adsrvr.org"]) {
+    display: none !important;
 }
 """
 
@@ -513,7 +531,6 @@ async def screenshot_url(
             )
 
                         # COOKIES
-            print("🍪 Recherche du bandeau cookies...")
 
             cookie_clicked = False
 
@@ -530,10 +547,8 @@ async def screenshot_url(
                     locator = page.locator(selector).first
 
                     if await locator.is_visible(timeout=1000):
-                        print(f"🍪 Bouton trouvé dans la page : {selector}")
                         await locator.click(timeout=3000)
                         cookie_clicked = True
-                        print("🍪 Cookies acceptés")
                         break
 
                 except Exception:
@@ -542,13 +557,12 @@ async def screenshot_url(
 
             # 2. Si rien trouvé, cherche dans les iframes
             if not cookie_clicked:
-                print(f"🍪 Recherche dans {len(page.frames)} iframe(s)...")
 
                 for frame in page.frames:
                     if frame == page.main_frame:
                         continue
 
-                    print(f"🍪 iframe : {frame.url}")
+                    print(f"iframe : {frame.url}")
 
                     for selector in [
                         "button:has-text('Accepter')",
@@ -563,13 +577,11 @@ async def screenshot_url(
 
                             if await locator.is_visible(timeout=1000):
                                 print(
-                                    f"🍪 Bouton trouvé dans iframe : {selector}"
                                 )
 
                                 await locator.click(timeout=3000)
                                 cookie_clicked = True
 
-                                print("🍪 Cookies acceptés dans l'iframe")
                                 break
 
                         except Exception:
@@ -580,7 +592,7 @@ async def screenshot_url(
 
 
             if not cookie_clicked:
-                print("🍪 Aucun bouton de cookies trouvé")
+                pass
 
             # --------------------------------------------------------
             # 2. Attendre le rendu dynamique
