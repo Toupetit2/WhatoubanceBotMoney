@@ -512,20 +512,35 @@ async def screenshot_url(
                 timeout=30000,
             )
 
-            
-            # Cookies
-            for cookie_selector in [
-                "text=Accepter",
-                "text=Accept",
-            ]:
+            # =========================
+            # COOKIES
+            # =========================
+            cookie_clicked = False
+
+            selectors = [
+                "button:has-text('Accepter')",
+                "[role='button']:has-text('Accepter')",
+                "button:has-text('Accept')",
+                "[role='button']:has-text('Accept')",
+            ]
+
+            for selector in selectors:
                 try:
-                    await page.click(
-                        cookie_selector,
-                        timeout=1500,
-                    )
-                    break
+                    locator = page.locator(selector).first
+
+                    if await locator.is_visible(timeout=1000):
+                        await locator.click(timeout=3000)
+                        print(f"🍪 Cookies acceptés avec : {selector}", flush=True)
+                        cookie_clicked = True
+                        break
+
                 except Exception:
                     pass
+
+            if not cookie_clicked:
+                print("🍪 Bouton cookies non trouvé", flush=True)
+
+            await page.wait_for_timeout(500)
 
             # --------------------------------------------------------
             # 2. Attendre le rendu dynamique
