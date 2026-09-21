@@ -515,41 +515,10 @@ async def screenshot_url(
             # =========================
             # COOKIES
             # =========================
-            print("🍪 Recherche du bandeau cookies...")
-
             try:
-                # Cherche tous les éléments contenant "Accepter" ou "Accept"
-                cookie_elements = await page.locator(
-                    "text=/Accepter|Accept/i"
-                ).all()
-
-                print(f"🍪 Éléments trouvés : {len(cookie_elements)}")
-
-                for i, element in enumerate(cookie_elements):
-                    try:
-                        visible = await element.is_visible()
-                        text = await element.inner_text()
-
-                        print(
-                            f"🍪 [{i}] visible={visible} "
-                            f"text={text!r}"
-                        )
-
-                        if visible:
-                            await element.click(
-                                timeout=3000,
-                                force=True,
-                            )
-
-                            print("🍪 Bouton cookies cliqué")
-                            await page.wait_for_timeout(1000)
-                            break
-
-                    except Exception as e:
-                        print(f"🍪 Erreur élément {i}: {e}")
-
-            except Exception as e:
-                print(f"🍪 Erreur recherche cookies : {e}")
+                await page.click("text=Accepter", timeout=3000)
+            except:
+                pass
 
             # --------------------------------------------------------
             # 2. Attendre le rendu dynamique
