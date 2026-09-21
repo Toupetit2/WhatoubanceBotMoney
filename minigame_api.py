@@ -512,13 +512,75 @@ async def screenshot_url(
                 timeout=30000,
             )
 
-            try:
-                await page.click(
-                    "text=Accepter",
-                    timeout=3000,
-                )
-            except Exception:
-                pass
+                        # COOKIES
+            print("🍪 Recherche du bandeau cookies...")
+
+            cookie_clicked = False
+
+            # 1. Cherche dans la page principale
+            for selector in [
+                "button:has-text('Accepter')",
+                "[role='button']:has-text('Accepter')",
+                "text=Accepter",
+                "button:has-text('Accept')",
+                "[role='button']:has-text('Accept')",
+                "text=Accept",
+            ]:
+                try:
+                    locator = page.locator(selector).first
+
+                    if await locator.is_visible(timeout=1000):
+                        print(f"🍪 Bouton trouvé dans la page : {selector}")
+                        await locator.click(timeout=3000)
+                        cookie_clicked = True
+                        print("🍪 Cookies acceptés")
+                        break
+
+                except Exception:
+                    pass
+
+
+            # 2. Si rien trouvé, cherche dans les iframes
+            if not cookie_clicked:
+                print(f"🍪 Recherche dans {len(page.frames)} iframe(s)...")
+
+                for frame in page.frames:
+                    if frame == page.main_frame:
+                        continue
+
+                    print(f"🍪 iframe : {frame.url}")
+
+                    for selector in [
+                        "button:has-text('Accepter')",
+                        "[role='button']:has-text('Accepter')",
+                        "text=Accepter",
+                        "button:has-text('Accept')",
+                        "[role='button']:has-text('Accept')",
+                        "text=Accept",
+                    ]:
+                        try:
+                            locator = frame.locator(selector).first
+
+                            if await locator.is_visible(timeout=1000):
+                                print(
+                                    f"🍪 Bouton trouvé dans iframe : {selector}"
+                                )
+
+                                await locator.click(timeout=3000)
+                                cookie_clicked = True
+
+                                print("🍪 Cookies acceptés dans l'iframe")
+                                break
+
+                        except Exception:
+                            pass
+
+                    if cookie_clicked:
+                        break
+
+
+            if not cookie_clicked:
+                print("🍪 Aucun bouton de cookies trouvé")
 
             # --------------------------------------------------------
             # 2. Attendre le rendu dynamique
