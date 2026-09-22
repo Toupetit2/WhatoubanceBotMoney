@@ -61,7 +61,8 @@ async def generate_one():
     if before_placements is None:
         for path in (raw_path, final_path):
             if os.path.exists(path):
-                os.remove(path)
+                #os.remove(path)
+                pass
         return None
 
     answer = before_placements[3] + 1
